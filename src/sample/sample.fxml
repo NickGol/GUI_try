@@ -9,11 +9,13 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
    <children>
-      <Button fx:id="but1_id" layoutX="128.0" layoutY="105.0" mnemonicParsing="false" onMouseClicked="#asd_func" text="Button" />
+      <Button fx:id="but1_id" layoutX="128.0" layoutY="105.0" mnemonicParsing="false" onMouseClicked="#asd_func" prefHeight="25.0" prefWidth="76.0" text="Connect" />
       <Label fx:id="label1_id" layoutX="219.0" layoutY="100.0" prefHeight="34.0" prefWidth="304.0" text="Label" />
       <ButtonBar layoutX="351.0" layoutY="299.0" prefHeight="40.0" prefWidth="200.0" />
       <TextField fx:id="id_IP" layoutX="335.0" layoutY="93.0" text="127.0.0.1" />
       <TextField fx:id="id_Port" layoutX="335.0" layoutY="152.0" text="502" />
       <ToggleButton layoutX="335.0" layoutY="207.0" mnemonicParsing="false" text="ToggleButton" />
+      <Button fx:id="ReadInp_but_id" layoutX="128.0" layoutY="152.0" mnemonicParsing="false" onMouseClicked="#Read_Input_regs" prefHeight="25.0" prefWidth="76.0" text="Read Input" />
+      <TextField fx:id="id_Input_str" layoutX="121.0" layoutY="232.0" promptText="Input Regs" />
    </children>
 </AnchorPane>

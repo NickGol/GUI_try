@@ -36,6 +36,11 @@ public class Controller {
     private TextField id_IP;
     @FXML
     private TextField id_Port;
+    @FXML
+    private Button ReadInp_but_id;
+
+    @FXML
+    private TextField id_Input_str;
 
     @FXML
     void initialize() {
@@ -53,5 +58,12 @@ public class Controller {
         /*System.out.println(event.getEventType());
         label1_id.setText(new Date().toString());*/
         modbusClient.Connect(id_IP.getText(),Integer.parseInt(id_Port.getText()));
+    }
+
+    @FXML
+    void Read_Input_regs(MouseEvent event) throws IOException, SerialPortTimeoutException, SerialPortException, ModbusException {
+        int[] Input_regs = modbusClient.ReadInputRegisters(0,4);
+        String str = Input_regs[0]+" "+Input_regs[1]+" "+Input_regs[2]+" "+Input_regs[3];
+        id_Input_str.setText(str);
     }
 }
