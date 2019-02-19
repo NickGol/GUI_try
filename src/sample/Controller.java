@@ -3,7 +3,13 @@ package sample;
 import java.net.URL;
 import java.util.Date;
 import java.util.ResourceBundle;
+
+import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -53,6 +59,13 @@ public class Controller {
 
     @FXML
     private TextField id_Holding_str;
+    @FXML
+    private LineChart<Integer, Integer> id_chart;
+    @FXML
+    private CategoryAxis id_X;
+
+    @FXML
+    private NumberAxis id_Y;
 
     @FXML
     void initialize() {
@@ -66,11 +79,44 @@ public class Controller {
         label1_id.setText(t.getName());
         execute = Executors.newScheduledThreadPool(1);
         task = () ->{
-            //label1_id.setText(String.valueOf(System.nanoTime()));
+            fffff();
+            //this.label1_id.setText("12345");
+            //label1_id.setText("12345");
             System.out.println(System.nanoTime());
         };
+
+        //id_X.setLabel("Number of Month");
+        //creating the chart
+        //final LineChart<Number,Number> lineChart =
+        //        new LineChart<Number,Number>(xAxis,yAxis);
+        //id_chart = new LineChart<Number,Number>(id_X,id_Y);
+        //id_chart.setTitle("Stock Monitoring, 2010");
+        //defining a series
+        XYChart.Series series = new XYChart.Series();
+        //series.setName("My portfolio");
+        //populating the series with data
+        series.getData().add(new XYChart.Data("1", 23));
+        series.getData().add(new XYChart.Data("2", 14));
+        series.getData().add(new XYChart.Data("3", 15));
+        series.getData().add(new XYChart.Data("4", 24));
+        series.getData().add(new XYChart.Data("5", 34));
+        /*series.getData().add(new XYChart.Data(6, 36));
+        series.getData().add(new XYChart.Data(7, 22));
+        series.getData().add(new XYChart.Data(8, 45));
+        series.getData().add(new XYChart.Data(9, 43));
+        series.getData().add(new XYChart.Data(10, 17));
+        series.getData().add(new XYChart.Data(11, 29));
+        series.getData().add(new XYChart.Data(12, 25));*/
+
+        id_chart.getData().addAll(series);
+
+
     }
 
+    void fffff()
+    {
+        Platform.runLater(()-> {Controller.this.label1_id.setText(String.valueOf(System.nanoTime()));});
+    }
     @FXML
     void asd_func(MouseEvent event) throws IOException {
         System.out.println("12345");
