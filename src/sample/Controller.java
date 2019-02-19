@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.ResourceBundle;
 
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
@@ -14,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.event.ActionEvent;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
@@ -33,7 +35,8 @@ public class Controller {
     private ModbusClient modbusClient;
     ScheduledExecutorService execute;
     Runnable task;
-
+    XYChart.Series series;
+    Double x_val = 6.0, y_val = 35.0;
     @FXML
     private ResourceBundle resources;
 
@@ -60,6 +63,8 @@ public class Controller {
     @FXML
     private TextField id_Holding_str;
     @FXML
+    private ToggleButton id_Draw_but;
+    @FXML
     private LineChart<Integer, Integer> id_chart;
     @FXML
     private CategoryAxis id_X;
@@ -68,7 +73,7 @@ public class Controller {
     private NumberAxis id_Y;
 
     @FXML
-    void initialize() {
+    void initialize() throws InterruptedException {
         //but1_id.setOnAction();
         boolean success = false;
         modbusClient = new ModbusClient(id_IP.getText(),Integer.parseInt(id_Port.getText()));
@@ -77,12 +82,12 @@ public class Controller {
         Thread t = Thread.currentThread(); // получаем главный поток
         System.out.println(t.getName()); // main
         label1_id.setText(t.getName());
-        execute = Executors.newScheduledThreadPool(1);
+        //execute = Executors.newScheduledThreadPool(1);
         task = () ->{
             fffff();
             //this.label1_id.setText("12345");
             //label1_id.setText("12345");
-            System.out.println(System.nanoTime());
+            //System.out.println(System.nanoTime());
         };
 
         //id_X.setLabel("Number of Month");
@@ -92,14 +97,21 @@ public class Controller {
         //id_chart = new LineChart<Number,Number>(id_X,id_Y);
         //id_chart.setTitle("Stock Monitoring, 2010");
         //defining a series
-        XYChart.Series series = new XYChart.Series();
+        /*XYChart.Series*/ series = new XYChart.Series();
         //series.setName("My portfolio");
         //populating the series with data
-        series.getData().add(new XYChart.Data("1", 23));
+        //series.getData().addAll()
+        //new XYChart.Series()
+        //ObservableList LLL = new
+        //series.getData()
+        /*series.getData().add(new XYChart.Data("1", 23));
         series.getData().add(new XYChart.Data("2", 14));
         series.getData().add(new XYChart.Data("3", 15));
         series.getData().add(new XYChart.Data("4", 24));
-        series.getData().add(new XYChart.Data("5", 34));
+        series.getData().add(new XYChart.Data("5", 34));*/
+        for(int i=0; i< 500; i++) {
+            series.getData().add(new XYChart.Data( String.valueOf(i), 0));
+        }
         /*series.getData().add(new XYChart.Data(6, 36));
         series.getData().add(new XYChart.Data(7, 22));
         series.getData().add(new XYChart.Data(8, 45));
@@ -109,13 +121,39 @@ public class Controller {
         series.getData().add(new XYChart.Data(12, 25));*/
 
         id_chart.getData().addAll(series);
+        /*Platform.runLater(()-> {Thread.sleep(1000);
+        series.getData().remove(0);
+        series.getData().add(new XYChart.Data("6", 55));
+        Thread.sleep(1000);
+        series.getData().remove(0);
+        series.getData().add(new XYChart.Data("7", 65));
+        Thread.sleep(1000);
+        series.getData().remove(0);
+        series.getData().add(new XYChart.Data("8", 75));
+        Thread.sleep(1000);
+        series.getData().remove(0);
+        series.getData().add(new XYChart.Data("9", 85));
+        Thread.sleep(1000);
+        series.getData().remove(0);
+        series.getData().add(new XYChart.Data("10", 95));
+        Thread.sleep(1000);
+        series.getData().remove(0);
+        series.getData().add(new XYChart.Data("11", 105));
+        Thread.sleep(1000);};*/
+
 
 
     }
 
     void fffff()
     {
-        Platform.runLater(()-> {Controller.this.label1_id.setText(String.valueOf(System.nanoTime()));});
+        //Platform.runLater(()-> {Controller.this.label1_id.setText(String.valueOf(System.nanoTime()));});
+        Platform.runLater(()-> {series.getData().remove(0);
+            //series.getData().add(new XYChart.Data("11", 105));});
+            series.getData().add(new XYChart.Data(x_val.toString(), y_val));});
+            //x_val++; y_val++;
+            x_val++;
+            y_val = Math.sin(6.28*x_val/360);
     }
     @FXML
     void asd_func(MouseEvent event) throws IOException {
@@ -148,6 +186,21 @@ public class Controller {
 
     @FXML
     void Toggle_click(MouseEvent event) {
-        execute.scheduleAtFixedRate(task,0, 100, TimeUnit.MILLISECONDS);
+        //fffff();
+        //execute.scheduleAtFixedRate(task,0, 100, TimeUnit.MILLISECONDS);
+    }
+
+    @FXML
+    void Draw_chart(MouseEvent event) {
+        if(id_Draw_but.getText().equals("Draw_chart_play")) {
+            id_Draw_but.setText("Draw_chart_stop");
+            execute = Executors.newScheduledThreadPool(1);
+            //execute.scheduleAtFixedRate(task, 0, 100, TimeUnit.MILLISECONDS);
+            execute.scheduleWithFixedDelay(task, 0, 100, TimeUnit.MILLISECONDS);
+        }
+        else {
+            id_Draw_but.setText("Draw_chart_play");
+            execute.shutdown();
+        }
     }
 }
