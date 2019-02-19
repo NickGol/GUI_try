@@ -111,49 +111,26 @@ public class Controller {
         series.getData().add(new XYChart.Data("5", 34));*/
         for(int i=0; i< 500; i++) {
             series.getData().add(new XYChart.Data( String.valueOf(i), 0));
+            x_val = Double.valueOf(i);
         }
-        /*series.getData().add(new XYChart.Data(6, 36));
-        series.getData().add(new XYChart.Data(7, 22));
-        series.getData().add(new XYChart.Data(8, 45));
-        series.getData().add(new XYChart.Data(9, 43));
-        series.getData().add(new XYChart.Data(10, 17));
-        series.getData().add(new XYChart.Data(11, 29));
-        series.getData().add(new XYChart.Data(12, 25));*/
-
         id_chart.getData().addAll(series);
-        /*Platform.runLater(()-> {Thread.sleep(1000);
-        series.getData().remove(0);
-        series.getData().add(new XYChart.Data("6", 55));
-        Thread.sleep(1000);
-        series.getData().remove(0);
-        series.getData().add(new XYChart.Data("7", 65));
-        Thread.sleep(1000);
-        series.getData().remove(0);
-        series.getData().add(new XYChart.Data("8", 75));
-        Thread.sleep(1000);
-        series.getData().remove(0);
-        series.getData().add(new XYChart.Data("9", 85));
-        Thread.sleep(1000);
-        series.getData().remove(0);
-        series.getData().add(new XYChart.Data("10", 95));
-        Thread.sleep(1000);
-        series.getData().remove(0);
-        series.getData().add(new XYChart.Data("11", 105));
-        Thread.sleep(1000);};*/
-
-
-
+        //id_chart.getData().
     }
 
     void fffff()
     {
         //Platform.runLater(()-> {Controller.this.label1_id.setText(String.valueOf(System.nanoTime()));});
-        Platform.runLater(()-> {series.getData().remove(0);
-            //series.getData().add(new XYChart.Data("11", 105));});
-            series.getData().add(new XYChart.Data(x_val.toString(), y_val));});
-            //x_val++; y_val++;
-            x_val++;
-            y_val = Math.sin(6.28*x_val/360);
+        Platform.runLater(()-> {
+            for(int i=0; i<50; i++) {
+                series.getData().remove(0);
+                //series.getData().add(new XYChart.Data("11", 105));});
+                series.getData().add(new XYChart.Data(x_val.toString(), y_val));
+                //x_val++; y_val++;
+                x_val++;
+                y_val = Math.sin(6.28 * x_val / 360);
+            }
+        });
+
     }
     @FXML
     void asd_func(MouseEvent event) throws IOException {
@@ -195,8 +172,8 @@ public class Controller {
         if(id_Draw_but.getText().equals("Draw_chart_play")) {
             id_Draw_but.setText("Draw_chart_stop");
             execute = Executors.newScheduledThreadPool(1);
-            //execute.scheduleAtFixedRate(task, 0, 100, TimeUnit.MILLISECONDS);
-            execute.scheduleWithFixedDelay(task, 0, 100, TimeUnit.MILLISECONDS);
+            execute.scheduleAtFixedRate(task, 0, 50, TimeUnit.MILLISECONDS);
+            //execute.scheduleWithFixedDelay(task, 0, 200, TimeUnit.MILLISECONDS);
         }
         else {
             id_Draw_but.setText("Draw_chart_play");
