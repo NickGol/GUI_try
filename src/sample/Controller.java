@@ -1,8 +1,7 @@
 package sample;
 
 import java.net.URL;
-import java.util.Date;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -20,9 +19,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
 import java.io.IOException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
@@ -31,12 +28,14 @@ import de.re.easymodbus.modbusclient.ModbusClient;
 import jssc.SerialPortException;
 import jssc.SerialPortTimeoutException;
 
-public class Controller {
+public class Controller implements Observer {
     private ModbusClient modbusClient;
     ScheduledExecutorService execute;
     Runnable task;
     XYChart.Series series;
     Double x_val = 6.0, y_val = 35.0;
+    Queue<Integer> block_queue_plot = new LinkedBlockingQueue<Integer>(500);
+
     @FXML
     private ResourceBundle resources;
 
@@ -82,33 +81,11 @@ public class Controller {
         Thread t = Thread.currentThread(); // получаем главный поток
         System.out.println(t.getName()); // main
         label1_id.setText(t.getName());
-        //execute = Executors.newScheduledThreadPool(1);
         task = () ->{
             fffff();
-            //this.label1_id.setText("12345");
-            //label1_id.setText("12345");
-            //System.out.println(System.nanoTime());
         };
+        series = new XYChart.Series();
 
-        //id_X.setLabel("Number of Month");
-        //creating the chart
-        //final LineChart<Number,Number> lineChart =
-        //        new LineChart<Number,Number>(xAxis,yAxis);
-        //id_chart = new LineChart<Number,Number>(id_X,id_Y);
-        //id_chart.setTitle("Stock Monitoring, 2010");
-        //defining a series
-        /*XYChart.Series*/ series = new XYChart.Series();
-        //series.setName("My portfolio");
-        //populating the series with data
-        //series.getData().addAll()
-        //new XYChart.Series()
-        //ObservableList LLL = new
-        //series.getData()
-        /*series.getData().add(new XYChart.Data("1", 23));
-        series.getData().add(new XYChart.Data("2", 14));
-        series.getData().add(new XYChart.Data("3", 15));
-        series.getData().add(new XYChart.Data("4", 24));
-        series.getData().add(new XYChart.Data("5", 34));*/
         for(int i=0; i< 500; i++) {
             series.getData().add(new XYChart.Data( String.valueOf(i), 0));
             x_val = Double.valueOf(i);
@@ -179,5 +156,14 @@ public class Controller {
             id_Draw_but.setText("Draw_chart_play");
             execute.shutdown();
         }
+    }
+
+    @Override
+    public void update(Observable source, Object arg) {
+        /*if(source instanceof Publisher) {
+
+            System.out.println((String) newsItem);
+
+        }*/
     }
 }
