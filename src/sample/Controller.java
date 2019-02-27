@@ -28,13 +28,14 @@ import de.re.easymodbus.modbusclient.ModbusClient;
 import jssc.SerialPortException;
 import jssc.SerialPortTimeoutException;
 
-public class Controller implements Observer {
+public class Controller extends Observable implements Observer {
     private ModbusClient modbusClient;
     ScheduledExecutorService execute;
     Runnable task;
     XYChart.Series series;
     Double x_val = 6.0, y_val = 35.0;
     Queue<Integer> block_queue_plot = new LinkedBlockingQueue<Integer>(500);
+    Wrire_to_BD Wr_bd = new Wrire_to_BD();
 
     @FXML
     private ResourceBundle resources;
@@ -91,7 +92,7 @@ public class Controller implements Observer {
             x_val = Double.valueOf(i);
         }
         id_chart.getData().addAll(series);
-        //id_chart.getData().
+        this.register(Wr_bd);
     }
 
     void fffff()
@@ -105,6 +106,7 @@ public class Controller implements Observer {
                 //x_val++; y_val++;
                 x_val++;
                 y_val = Math.sin(6.28 * x_val / 360);
+                addNews(y_val.intValue());
             }
         });
 
@@ -148,13 +150,15 @@ public class Controller implements Observer {
     void Draw_chart(MouseEvent event) {
         if(id_Draw_but.getText().equals("Draw_chart_play")) {
             id_Draw_but.setText("Draw_chart_stop");
-            execute = Executors.newScheduledThreadPool(1);
+            execute = Executors.newScheduledThreadPool(2);
             execute.scheduleAtFixedRate(task, 0, 50, TimeUnit.MILLISECONDS);
             //execute.scheduleWithFixedDelay(task, 0, 200, TimeUnit.MILLISECONDS);
+            Wr_bd.Start_writing_to_monitor();
         }
         else {
             id_Draw_but.setText("Draw_chart_play");
             execute.shutdown();
+            Wr_bd.Stop_writing_to_monitor();
         }
     }
 
@@ -165,5 +169,21 @@ public class Controller implements Observer {
             System.out.println((String) newsItem);
 
         }*/
+    }
+
+
+    private List<Observer> channels = new ArrayList<>();
+
+    public void addNews(Integer newItem)
+    {
+
+        for(Observer observ: this.channels) {
+            observ.update(this, newItem);
+        }
+    }
+
+    public void register(Observer observ)
+    {
+        channels.add(observ);
     }
 }
