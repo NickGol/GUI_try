@@ -35,7 +35,7 @@ public class Controller extends Observable implements Observer {
     XYChart.Series series;
     Double x_val = 6.0, y_val = 35.0;
     Queue<Integer> block_queue_plot = new LinkedBlockingQueue<Integer>(500);
-    Wrire_to_BD Wr_bd = new Wrire_to_BD();
+    Wrire_to_BD Wr_bd;// = new Wrire_to_BD();
 
     @FXML
     private ResourceBundle resources;
@@ -92,14 +92,13 @@ public class Controller extends Observable implements Observer {
             x_val = Double.valueOf(i);
         }
         id_chart.getData().addAll(series);
-        this.register(Wr_bd);
     }
 
     void fffff()
     {
         //Platform.runLater(()-> {Controller.this.label1_id.setText(String.valueOf(System.nanoTime()));});
         Platform.runLater(()-> {
-            for(int i=0; i<50; i++) {
+            for(int i=0; i<10; i++) {
                 series.getData().remove(0);
                 //series.getData().add(new XYChart.Data("11", 105));});
                 series.getData().add(new XYChart.Data(x_val.toString(), y_val));
@@ -151,8 +150,10 @@ public class Controller extends Observable implements Observer {
         if(id_Draw_but.getText().equals("Draw_chart_play")) {
             id_Draw_but.setText("Draw_chart_stop");
             execute = Executors.newScheduledThreadPool(2);
-            execute.scheduleAtFixedRate(task, 0, 50, TimeUnit.MILLISECONDS);
+            execute.scheduleWithFixedDelay(task, 0, 50, TimeUnit.MILLISECONDS);
             //execute.scheduleWithFixedDelay(task, 0, 200, TimeUnit.MILLISECONDS);
+            Wr_bd = new Wrire_to_BD(execute);
+            this.register(Wr_bd);
             Wr_bd.Start_writing_to_monitor();
         }
         else {
@@ -174,11 +175,18 @@ public class Controller extends Observable implements Observer {
 
     private List<Observer> channels = new ArrayList<>();
 
-    public void addNews(Integer newItem)
-    {
-
+    public void addNews(Integer newItem) {
+        Integer[] i_arr1 = {1, 2, 3, 4, 5};
+        Integer[] i_arr2 = {1, 2, 3, 4, 5, 6, 7};
+        /*
         for(Observer observ: this.channels) {
             observ.update(this, newItem);
+        }*/
+        for (Observer observ : this.channels) {
+            observ.update(this, i_arr1);
+        }
+        for (Observer observ : this.channels) {
+            observ.update(this, i_arr2);
         }
     }
 
