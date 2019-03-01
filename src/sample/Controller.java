@@ -44,7 +44,7 @@ public class Controller extends Observable implements Observer {
     private URL location;
 
     @FXML
-    private Button but1_id;
+    Button but1_id;
     @FXML
     private Label label1_id;
     @FXML
@@ -152,7 +152,7 @@ public class Controller extends Observable implements Observer {
             execute = Executors.newScheduledThreadPool(2);
             execute.scheduleWithFixedDelay(task, 0, 50, TimeUnit.MILLISECONDS);
             //execute.scheduleWithFixedDelay(task, 0, 200, TimeUnit.MILLISECONDS);
-            Wr_bd = new Wrire_to_BD(execute);
+            Wr_bd = new Wrire_to_BD(this/*execute*/);
             this.register(Wr_bd);
             Wr_bd.Start_writing_to_monitor();
         }

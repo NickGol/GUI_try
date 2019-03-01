@@ -7,14 +7,36 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javafx.application.Platform;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.event.ActionEvent;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+
 public class Wrire_to_BD implements Observer {
+/*    @FXML
+    private Button but1_id;*/
+
     Queue<Integer[]> block_queue_bd = new LinkedBlockingQueue<Integer[]>();
     Runnable task;
     ScheduledExecutorService execute;
+    private Controller controller;
 
-    public Wrire_to_BD(ScheduledExecutorService e1)
+    public Wrire_to_BD(Controller cntrl/*ScheduledExecutorService e1*/)
     {
+        this.controller = cntrl;
         //execute = e1;
+        System.out.println(controller.but1_id.getText());
+        controller.but1_id.setText("12345");
         task = () ->{
             this.Write_data_to_monitor();
         };
