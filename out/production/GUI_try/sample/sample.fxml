@@ -22,7 +22,7 @@
       <TextField fx:id="id_Input_str" layoutX="144.0" layoutY="51.0" promptText="Input Regs" />
       <Button fx:id="WriteHold_but_id" layoutX="31.0" layoutY="82.0" mnemonicParsing="false" onMouseClicked="#Write_Holding_regs" prefHeight="25.0" prefWidth="76.0" text="Write Hold" />
       <TextField fx:id="id_Holding_str" layoutX="145.0" layoutY="82.0" promptText="Input Regs" />
-      <Button fx:id="WriteHold_but_id1" accessibleRole="TOGGLE_BUTTON" layoutX="31.0" layoutY="210.0" mnemonicParsing="false" onMouseClicked="#Draw_chart" prefHeight="25.0" prefWidth="76.0" text="Draw chart" />
+      <Button fx:id="WriteHold_but_id1" accessibleRole="TOGGLE_BUTTON" layoutX="31.0" layoutY="210.0" mnemonicParsing="false" onMouseClicked="#Draw_chart_12345" prefHeight="25.0" prefWidth="76.0" text="Draw chart" />
       <LineChart fx:id="id_chart" animated="false" cache="true" cacheHint="SPEED" createSymbols="false" layoutX="140.0" layoutY="117.0" prefHeight="277.0" prefWidth="426.0">
         <xAxis>
           <CategoryAxis fx:id="id_X" animated="false" side="BOTTOM" />

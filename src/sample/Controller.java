@@ -36,6 +36,7 @@ public class Controller extends Observable implements Observer {
     Double x_val = 6.0, y_val = 35.0;
     Queue<Integer> block_queue_plot = new LinkedBlockingQueue<Integer>(500);
     Wrire_to_BD Wr_bd;// = new Wrire_to_BD();
+    Controller_Proc controller_proc;// = new Controller_Proc(this);
 
     @FXML
     private ResourceBundle resources;
@@ -92,6 +93,8 @@ public class Controller extends Observable implements Observer {
             x_val = Double.valueOf(i);
         }
         id_chart.getData().addAll(series);
+        controller_proc = new Controller_Proc(this);
+
     }
 
     void fffff()
@@ -161,6 +164,11 @@ public class Controller extends Observable implements Observer {
             execute.shutdown();
             Wr_bd.Stop_writing_to_monitor();
         }
+    }
+
+    @FXML
+    void Draw_chart_12345(MouseEvent event) {
+        controller_proc.Set_ui_cmd("cmd1");
     }
 
     @Override
