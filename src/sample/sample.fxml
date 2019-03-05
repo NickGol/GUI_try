@@ -31,5 +31,6 @@
           <NumberAxis fx:id="id_Y" animated="false" autoRanging="false" lowerBound="-1.25" minorTickCount="3" side="LEFT" tickLabelGap="0.25" tickUnit="0.25" upperBound="1.25" />
         </yAxis>
       </LineChart>
+      <TextField fx:id="id_timeout" layoutX="319.0" layoutY="51.0" promptText="TimeOut" text="100" />
    </children>
 </AnchorPane>

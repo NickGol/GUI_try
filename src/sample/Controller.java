@@ -50,6 +50,11 @@ public class Controller extends Observable implements Observer {
     private Label label1_id;
     @FXML
     private TextField id_IP;
+
+    public TextField getId_Port() {
+        return id_Port;
+    }
+
     @FXML
     private TextField id_Port;
     @FXML
@@ -72,6 +77,22 @@ public class Controller extends Observable implements Observer {
 
     @FXML
     private NumberAxis id_Y;
+
+    public TextField getId_timeout() {
+        //if(id_timeout.focusedProperty())
+        return id_timeout;
+    }
+    private static Integer static_integer = 100;
+    public Integer getId_timeout_val() {
+        //Integer static_integer = 100;
+        if(id_timeout.focusedProperty().getValue())
+            return static_integer;
+        static_integer = Integer.parseInt(id_timeout.getText());
+        return static_integer;
+    }
+
+    @FXML
+    private TextField id_timeout;
 
     @FXML
     void initialize() throws InterruptedException {

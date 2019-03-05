@@ -1,6 +1,5 @@
 package sample;
 
-import java.util.Queue;
 import java.util.concurrent.*;
 
 public class Controller_Proc {
@@ -10,24 +9,47 @@ public class Controller_Proc {
     private ScheduledExecutorService execute;
     ScheduledFuture<?> future_1, future_2, future_3;
     Runnable task = () ->{
-        this.Get_ui_cmd();
+        //this.Get_ui_cmd();
+        while(true)
+        try {
+            Thread.sleep( this.controller.getId_timeout_val() );
+            System.out.println(this.controller.getId_timeout_val());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     };
     Runnable task_1 = () ->{
         System.out.println("1");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     };
     Runnable task_2 = () ->{
         System.out.println("2");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     };
     Runnable task_3 = () ->{
         System.out.println("3");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     };
 
     public Controller_Proc(Controller controller) {
         this.controller = controller;
-        execute = Executors.newScheduledThreadPool(1);
-        future_1 = execute.scheduleAtFixedRate(task_1, 0, 500, TimeUnit.MILLISECONDS);
-        future_2 = execute.scheduleAtFixedRate(task_2, 0, 500, TimeUnit.MILLISECONDS);
-        future_3 = execute.scheduleAtFixedRate(task_3, 0, 500, TimeUnit.MILLISECONDS);
+        execute = Executors.newScheduledThreadPool(2);
+//        future_1 = execute.scheduleAtFixedRate(task_1, 0, 500, TimeUnit.MILLISECONDS);
+//        future_2 = execute.scheduleAtFixedRate(task_2, 0, 500, TimeUnit.MILLISECONDS);
+//        future_3 = execute.scheduleAtFixedRate(task_3, 0, 500, TimeUnit.MILLISECONDS);
         //task.run();
         Thread thread = new Thread(task);
         thread.start();
