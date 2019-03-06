@@ -1,8 +1,11 @@
 package sample;
 
 import java.util.concurrent.*;
+import de.re.easymodbus.exceptions.ModbusException;
+import de.re.easymodbus.modbusclient.ModbusClient;
 
 public class Controller_Proc {
+    private ModbusClient modbusClient;
     LinkedBlockingQueue<String> ui_cmd_queue = new LinkedBlockingQueue<String>(55);
     private String cmd;
     private Controller controller;
@@ -100,8 +103,15 @@ public class Controller_Proc {
     private void Select_ui_func(String cmd) {
         this.cmd = cmd;
         switch (cmd) {
-            case "cmd1": break;
+            case "Modbus_connect": Modbus_Client_Connect();
+                break;
+            case "Read_Input_regs": break;
+            case "Write_Holding_regs": break;
             default: break;
         }
+    }
+
+    private void Modbus_Client_Connect() {
+        //modbusClient.Connect(id_mb_IP_text.getText(),controller.get_Id_mb_port_text_int());
     }
 }

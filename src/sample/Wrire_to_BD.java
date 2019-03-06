@@ -35,8 +35,8 @@ public class Wrire_to_BD implements Observer {
     {
         this.controller = cntrl;
         //execute = e1;
-        System.out.println(controller.but1_id.getText());
-        controller.but1_id.setText("12345");
+        //System.out.println(controller.but1_id.getText());
+        //controller.but1_id.setText("12345");
         task = () ->{
             this.Write_data_to_monitor();
         };

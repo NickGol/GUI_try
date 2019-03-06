@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.*;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.CategoryAxis;
@@ -38,69 +39,79 @@ public class Controller extends Observable implements Observer {
     Wrire_to_BD Wr_bd;// = new Wrire_to_BD();
     Controller_Proc controller_proc;// = new Controller_Proc(this);
 
+// Controls
     @FXML
     private ResourceBundle resources;
-
     @FXML
     private URL location;
-
     @FXML
-    Button but1_id;
+    private Button id_mb_connect_btn;
     @FXML
     private Label label1_id;
     @FXML
-    private TextField id_IP;
-
-    public TextField getId_Port() {
-        return id_Port;
+    private TextField id_mb_IP_text;
+    private String id_mb_IP_text_str_val;
+    public String get_id_mb_IP_text_str() {
+        return id_mb_IP_text_str_val;
     }
 
     @FXML
-    private TextField id_Port;
-    @FXML
-    private Button ReadInp_but_id;
+    private TextField id_mb_port_text;
+    private Integer id_mb_port_text_int_val;
+    public Integer get_Id_mb_port_text_int() {
+        return id_mb_port_text_int_val;
+    }
+    ChangeListener<Boolean> Check_if_focused = (obs, oldVal, newVal) ->{
+        if(newVal){
+            id_mb_port_text_int_val = Integer.parseInt(id_mb_port_text.getText());
+        }
+    };
 
-    @FXML
-    private TextField id_Input_str;
-
-    @FXML
-    private Button WriteHold_but_id;
-
-    @FXML
-    private TextField id_Holding_str;
     @FXML
     private ToggleButton id_Draw_but;
     @FXML
-    private LineChart<Integer, Integer> id_chart;
+    private Button id_mb_read_input_btn;
+    @FXML
+    private TextField id_Input_str;
+    @FXML
+    private Button id_mb_write_hold_btn;
+    @FXML
+    private TextField id_Holding_str;
+    @FXML
+    private Button WriteHold_but_id1;
+    @FXML
+    private LineChart<?, ?> id_chart;
     @FXML
     private CategoryAxis id_X;
-
     @FXML
     private NumberAxis id_Y;
+    @FXML
+    private TextField id_mb_timeout_text;
 
     public TextField getId_timeout() {
         //if(id_timeout.focusedProperty())
-        return id_timeout;
+        return id_mb_timeout_text;
     }
     private static Integer static_integer = 100;
     public Integer getId_timeout_val() {
         //Integer static_integer = 100;
-        if(id_timeout.focusedProperty().getValue())
+        //id_mb_timeout_text.focusedProperty().addListener();
+        id_mb_port_text.focusedProperty().addListener((obs, oldVal, newVal) ->
+                System.out.println(newVal ? "Focused" : "Unfocused"));
+        if(id_mb_timeout_text.focusedProperty().getValue())
             return static_integer;
-        static_integer = Integer.parseInt(id_timeout.getText());
+        static_integer = Integer.parseInt(id_mb_timeout_text.getText());
         return static_integer;
     }
 
-    @FXML
-    private TextField id_timeout;
+// Interrupts
 
     @FXML
     void initialize() throws InterruptedException {
-        //but1_id.setOnAction();
-        boolean success = false;
-        modbusClient = new ModbusClient(id_IP.getText(),Integer.parseInt(id_Port.getText()));
-        System.out.println(modbusClient.Available(500));
-        System.out.println("1234567890");
+        modbusClient = new ModbusClient(id_mb_IP_text.getText(),Integer.parseInt(id_mb_port_text.getText()));
+        id_mb_port_text.focusedProperty().addListener(Check_if_focused);
+        //System.out.println(modbusClient.Available(500));
+        //System.out.println("1234567890");
         Thread t = Thread.currentThread(); // получаем главный поток
         System.out.println(t.getName()); // main
         label1_id.setText(t.getName());
@@ -135,22 +146,22 @@ public class Controller extends Observable implements Observer {
 
     }
     @FXML
-    void asd_func(MouseEvent event) throws IOException {
-        System.out.println("12345");
-        /*System.out.println(event.getEventType());
-        label1_id.setText(new Date().toString());*/
-        modbusClient.Connect(id_IP.getText(),Integer.parseInt(id_Port.getText()));
+    void Connect_but(MouseEvent event) throws IOException {
+        //controller_proc.Set_ui_cmd("Modbus_connect");
+        modbusClient.Connect(id_mb_IP_text.getText(),Integer.parseInt(id_mb_port_text.getText()));
     }
 
     @FXML
-    void Read_Input_regs(MouseEvent event) throws IOException, SerialPortTimeoutException, SerialPortException, ModbusException {
+    void Read_Input_but(MouseEvent event) throws IOException, SerialPortTimeoutException, SerialPortException, ModbusException {
+        //controller_proc.Set_ui_cmd("Read_Input_regs");
         int[] Input_regs = modbusClient.ReadInputRegisters(0,4);
         String str = Input_regs[0]+" "+Input_regs[1]+" "+Input_regs[2]+" "+Input_regs[3];
         id_Input_str.setText(str);
     }
 
     @FXML
-    void Write_Holding_regs(MouseEvent event) throws IOException, SerialPortTimeoutException, SerialPortException, ModbusException {
+    void Write_Holding_but(MouseEvent event) throws IOException, SerialPortTimeoutException, SerialPortException, ModbusException {
+        //controller_proc.Set_ui_cmd("Write_Holding_regs");
         int[] Holding_regs;// = Integer.parseInt(id_Holding_str.getText().split(" "));
         int i=0;
         String[] s = id_Holding_str.getText().trim().split(" ");
