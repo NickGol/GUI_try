@@ -1343,11 +1343,11 @@ public class ModbusClient
 	 * @throws SerialPortException 
         */
 	public int[] ReadInputRegisters(int startingAddress, int quantity) throws de.re.easymodbus.exceptions.ModbusException,
-                UnknownHostException, SocketException, IOException, SerialPortException, SerialPortTimeoutException
+                UnknownHostException, SocketException, IOException/*/////, SerialPortException, SerialPortTimeoutException*/
 	{
 		if (tcpClientSocket == null)
 			throw new de.re.easymodbus.exceptions.ConnectionException("connection Error");
-		if (startingAddress > 65535 | quantity > 125)
+		if (startingAddress > 65535 | quantity > 5125)
 			throw new IllegalArgumentException("Starting adress must be 0 - 65535; quantity must be 0 - 125");
 		int[] response = new int[quantity];
 		this.transactionIdentifier = toByteArray(0x0001);
@@ -1357,6 +1357,8 @@ public class ModbusClient
 		this.functionCode = 0x04;
 		this.startingAddress = toByteArray(startingAddress);
 		this.quantity = toByteArray(quantity);
+        //this.quantity[0] = 15;
+        //this.quantity[1] = 15;
 		byte[] data = new byte[]
 				{
 					this.transactionIdentifier[1],
@@ -1381,7 +1383,7 @@ public class ModbusClient
             data[data.length -1] = crc[1];
         }
         byte[] serialdata=null;
-        if (serialflag)
+        /*/////if (serialflag)
         {        
         	serialdata = new byte[8];
         	java.lang.System.arraycopy(data, 6,serialdata,0,8);
@@ -1417,7 +1419,7 @@ public class ModbusClient
                 ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);						
                 response[i] = byteBuffer.getShort();
             }	
-        }
+        }*/
 
 		if (tcpClientSocket.isConnected() | udpFlag)
 		{
@@ -1445,8 +1447,11 @@ public class ModbusClient
 					for (SendDataChangedListener hl : sendDataChangedListener)
 						hl.SendDataChanged();
 				}
-				data = new byte[2100];
-				int numberOfBytes = inStream.read(data, 0, data.length);
+				data = new byte[8009];
+				DataInputStream in = new DataInputStream(inStream);
+				in.readFully(data, 0, 8009);
+				int numberOfBytes = data.length;
+				//int numberOfBytes = inStream.read(data, 0, data.length);
 				if (receiveDataChangedListener.size() > 0)
 				{
 					receiveData = new byte[numberOfBytes];
@@ -1924,7 +1929,7 @@ public class ModbusClient
         * @throws SerialPortTimeoutException 
         * @throws SerialPortException 
         */    public void WriteMultipleRegisters(int startingAddress, int[] values) throws de.re.easymodbus.exceptions.ModbusException,
-                UnknownHostException, SocketException, IOException, SerialPortException, SerialPortTimeoutException
+                UnknownHostException, SocketException, IOException/*/////,SerialPortException, SerialPortTimeoutException*/
 
     {
         byte byteCount = (byte)(values.length * 2);
@@ -1964,7 +1969,7 @@ public class ModbusClient
             data[data.length -1] = crc[1];
         }
         byte[] serialdata =null;
-        if (serialflag)
+/*/////        if (serialflag)
         {             
         	serialdata =new byte[9+byteCount]; 
         	java.lang.System.arraycopy(data, 6,serialdata,0,9+byteCount);
@@ -1991,7 +1996,7 @@ public class ModbusClient
             data = new byte[262]; 
             System.arraycopy(serialdata, 0, data, 6, serialdata.length);
             if (debug) StoreLogData.getInstance().Store("Receive ModbusRTU-Data: " + Arrays.toString(data));
-        }
+        }*/
         if (tcpClientSocket.isConnected() | udpFlag)
         {
 		if (udpFlag)

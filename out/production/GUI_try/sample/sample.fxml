@@ -12,24 +12,25 @@
 
 <AnchorPane cache="true" cacheHint="SPEED" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
    <children>
-      <Button fx:id="but1_id" layoutX="30.0" layoutY="21.0" mnemonicParsing="false" onMouseClicked="#asd_func" prefHeight="25.0" prefWidth="76.0" text="Connect" />
+      <Button fx:id="id_mb_connect_btn" layoutX="30.0" layoutY="21.0" mnemonicParsing="false" onMouseClicked="#Connect_but" prefHeight="25.0" prefWidth="76.0" text="Connect" />
       <Label fx:id="label1_id" layoutX="472.0" layoutY="17.0" prefHeight="34.0" prefWidth="114.0" text="Thread_data" />
       <ButtonBar layoutX="351.0" layoutY="299.0" prefHeight="40.0" prefWidth="200.0" />
-      <TextField fx:id="id_IP" layoutX="144.0" layoutY="21.0" text="127.0.0.1" />
-      <TextField fx:id="id_Port" layoutX="319.0" layoutY="21.0" text="502" />
+      <TextField fx:id="id_mb_IP_text" layoutX="144.0" layoutY="21.0" text="127.0.0.1" />
+      <TextField fx:id="id_mb_port_text" layoutX="319.0" layoutY="21.0" text="502" />
       <ToggleButton fx:id="id_Draw_but" layoutX="24.0" layoutY="158.0" mnemonicParsing="false" onMouseClicked="#Draw_chart" text="Draw_chart_play" />
-      <Button fx:id="ReadInp_but_id" layoutX="30.0" layoutY="51.0" mnemonicParsing="false" onMouseClicked="#Read_Input_regs" prefHeight="25.0" prefWidth="76.0" text="Read Input" />
+      <Button fx:id="id_mb_read_input_btn" layoutX="30.0" layoutY="51.0" mnemonicParsing="false" onMouseClicked="#Read_Input_but" prefHeight="25.0" prefWidth="76.0" text="Read Input" />
       <TextField fx:id="id_Input_str" layoutX="144.0" layoutY="51.0" promptText="Input Regs" />
-      <Button fx:id="WriteHold_but_id" layoutX="31.0" layoutY="82.0" mnemonicParsing="false" onMouseClicked="#Write_Holding_regs" prefHeight="25.0" prefWidth="76.0" text="Write Hold" />
+      <Button fx:id="id_mb_write_hold_btn" layoutX="31.0" layoutY="82.0" mnemonicParsing="false" onMouseClicked="#Write_Holding_but" prefHeight="25.0" prefWidth="76.0" text="Write Hold" />
       <TextField fx:id="id_Holding_str" layoutX="145.0" layoutY="82.0" promptText="Input Regs" />
       <Button fx:id="WriteHold_but_id1" accessibleRole="TOGGLE_BUTTON" layoutX="31.0" layoutY="210.0" mnemonicParsing="false" onMouseClicked="#Draw_chart_12345" prefHeight="25.0" prefWidth="76.0" text="Draw chart" />
       <LineChart fx:id="id_chart" animated="false" cache="true" cacheHint="SPEED" createSymbols="false" layoutX="140.0" layoutY="117.0" prefHeight="277.0" prefWidth="426.0">
         <xAxis>
-          <CategoryAxis fx:id="id_X" animated="false" side="BOTTOM" />
+          <CategoryAxis fx:id="id_X" animated="false" endMargin="50.0" side="BOTTOM" startMargin="50.0" tickLabelGap="5.0" />
         </xAxis>
         <yAxis>
-          <NumberAxis fx:id="id_Y" animated="false" autoRanging="false" lowerBound="-1.25" minorTickCount="3" side="LEFT" tickLabelGap="0.25" tickUnit="0.25" upperBound="1.25" />
+          <NumberAxis fx:id="id_Y" animated="false" autoRanging="false" lowerBound="-1100.0" side="LEFT" tickLabelGap="10.0" tickUnit="50.0" upperBound="1100.0" />
         </yAxis>
       </LineChart>
+      <TextField fx:id="id_mb_timeout_text" layoutX="319.0" layoutY="51.0" promptText="TimeOut" text="100" />
    </children>
 </AnchorPane>

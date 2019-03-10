@@ -5,7 +5,6 @@ import java.util.*;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
@@ -14,16 +13,12 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.event.ActionEvent;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
 import java.io.IOException;
 import java.util.concurrent.*;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import de.re.easymodbus.exceptions.ModbusException;
 import de.re.easymodbus.modbusclient.ModbusClient;
 import jssc.SerialPortException;
@@ -33,7 +28,7 @@ public class Controller extends Observable implements Observer {
     private ModbusClient modbusClient;
     ScheduledExecutorService execute;
     Runnable task;
-    XYChart.Series series;
+    XYChart.Series<Integer, Integer> series;
     Double x_val = 6.0, y_val = 35.0;
     Queue<Integer> block_queue_plot = new LinkedBlockingQueue<Integer>(500);
     Wrire_to_BD Wr_bd;// = new Wrire_to_BD();
@@ -48,20 +43,26 @@ public class Controller extends Observable implements Observer {
     private Button id_mb_connect_btn;
     @FXML
     private Label label1_id;
+
     @FXML
     private TextField id_mb_IP_text;
-    private String id_mb_IP_text_str_val;
+    private String id_mb_IP_text_str_val = "127.0.0.1";
     public String get_id_mb_IP_text_str() {
         return id_mb_IP_text_str_val;
     }
+    private ChangeListener<Boolean> Check_if_focused_mb_IP_text = (obs, oldVal, newVal) ->{
+        if(newVal){
+            id_mb_IP_text_str_val = id_mb_IP_text.getText();
+        }
+    };
 
     @FXML
     private TextField id_mb_port_text;
-    private Integer id_mb_port_text_int_val;
+    private Integer id_mb_port_text_int_val = 502;
     public Integer get_Id_mb_port_text_int() {
         return id_mb_port_text_int_val;
     }
-    ChangeListener<Boolean> Check_if_focused = (obs, oldVal, newVal) ->{
+    private ChangeListener<Boolean> Check_if_focused_mb_port_text = (obs, oldVal, newVal) ->{
         if(newVal){
             id_mb_port_text_int_val = Integer.parseInt(id_mb_port_text.getText());
         }
@@ -71,16 +72,42 @@ public class Controller extends Observable implements Observer {
     private ToggleButton id_Draw_but;
     @FXML
     private Button id_mb_read_input_btn;
+
+
+
     @FXML
     private TextField id_Input_str;
+    public void set_id_Input_str(String id_Input_str) {
+        this.id_Input_str.setText(id_Input_str);
+        System.out.println(Thread.currentThread().getName());
+    }
+
     @FXML
     private Button id_mb_write_hold_btn;
+
     @FXML
     private TextField id_Holding_str;
+    private int[] id_Holding_str_int16_arr_val = new int[10];
+    public int[] get_id_Holding_str_int16_arr() {
+        return id_Holding_str_int16_arr_val;
+    }
+    private ChangeListener<Boolean> Check_if_focused_mb_Holding_str = (obs, oldVal, newVal) ->{
+        if(newVal){
+            int i=0;
+            String[] s = id_Holding_str.getText().trim().split(" ");
+            //id_Holding_str_int16_arr_val = new Integer[s.length];
+            for (String str :id_Holding_str.getText().split(" "))
+            {
+                id_Holding_str_int16_arr_val[i] = Integer.parseInt(str);
+                i++;
+            }
+        }
+    };
+
     @FXML
     private Button WriteHold_but_id1;
     @FXML
-    private LineChart<?, ?> id_chart;
+    /*private */LineChart<Integer, Integer> id_chart;
     @FXML
     private CategoryAxis id_X;
     @FXML
@@ -109,7 +136,12 @@ public class Controller extends Observable implements Observer {
     @FXML
     void initialize() throws InterruptedException {
         modbusClient = new ModbusClient(id_mb_IP_text.getText(),Integer.parseInt(id_mb_port_text.getText()));
-        id_mb_port_text.focusedProperty().addListener(Check_if_focused);
+        id_mb_port_text.focusedProperty().addListener(Check_if_focused_mb_port_text);
+        id_mb_IP_text.focusedProperty().addListener(Check_if_focused_mb_IP_text);
+        id_Holding_str.focusedProperty().addListener(Check_if_focused_mb_Holding_str);
+
+        //this.register(controller_proc);
+
         //System.out.println(modbusClient.Available(500));
         //System.out.println("1234567890");
         Thread t = Thread.currentThread(); // получаем главный поток
@@ -118,13 +150,18 @@ public class Controller extends Observable implements Observer {
         task = () ->{
             fffff();
         };
-        series = new XYChart.Series();
+        series = new XYChart.Series<Integer, Integer>();
+        Integer [] arr1 = {1,2,3,4,5};
+        Integer [] arr2 = {6,7,8,9,10};
+        /*series.getData().add(new XYChart.Data(arr1, arr2));
+        id_chart.getData().addAll(series);*/
 
-        for(int i=0; i< 500; i++) {
-            series.getData().add(new XYChart.Data( String.valueOf(i), 0));
+        for(Integer i=0; i< 500; i++) {
+            Integer a=0;
+            series.getData().add(new XYChart.Data( i.toString(), a));
             x_val = Double.valueOf(i);
         }
-        id_chart.getData().addAll(series);
+        id_chart.getData().setAll(series);
         controller_proc = new Controller_Proc(this);
 
     }
@@ -147,16 +184,16 @@ public class Controller extends Observable implements Observer {
     }
     @FXML
     void Connect_but(MouseEvent event) throws IOException {
-        //controller_proc.Set_ui_cmd("Modbus_connect");
-        modbusClient.Connect(id_mb_IP_text.getText(),Integer.parseInt(id_mb_port_text.getText()));
+        controller_proc.Set_ui_cmd("Modbus_connect");
+        //modbusClient.Connect(id_mb_IP_text.getText(),Integer.parseInt(id_mb_port_text.getText()));
     }
 
     @FXML
     void Read_Input_but(MouseEvent event) throws IOException, SerialPortTimeoutException, SerialPortException, ModbusException {
-        //controller_proc.Set_ui_cmd("Read_Input_regs");
-        int[] Input_regs = modbusClient.ReadInputRegisters(0,4);
+        controller_proc.Set_ui_cmd("Read_Input_regs");
+        /*int[] Input_regs = modbusClient.ReadInputRegisters(0,4);
         String str = Input_regs[0]+" "+Input_regs[1]+" "+Input_regs[2]+" "+Input_regs[3];
-        id_Input_str.setText(str);
+        id_Input_str.setText(str);*/
     }
 
     @FXML
@@ -235,3 +272,12 @@ public class Controller extends Observable implements Observer {
         channels.add(observ);
     }
 }
+
+
+/*
+*         series = new XYChart.Series<Integer[], Integer[]>();
+        Integer [] arr1 = {1,2,3,4,5};
+        Integer [] arr2 = {6,7,8,9,10};
+        series.getData().add(new XYChart.Data(arr1, arr2));
+        id_chart.getData().addAll(series);
+* */
