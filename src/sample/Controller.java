@@ -28,7 +28,7 @@ public class Controller extends Observable implements Observer {
     private ModbusClient modbusClient;
     ScheduledExecutorService execute;
     Runnable task;
-    XYChart.Series<Integer, Integer> series;
+    XYChart.Series series;
     Double x_val = 6.0, y_val = 35.0;
     Queue<Integer> block_queue_plot = new LinkedBlockingQueue<Integer>(500);
     Wrire_to_BD Wr_bd;// = new Wrire_to_BD();
@@ -107,7 +107,7 @@ public class Controller extends Observable implements Observer {
     @FXML
     private Button WriteHold_but_id1;
     @FXML
-    /*private */LineChart<Integer, Integer> id_chart;
+    /*private */LineChart<Number, Number> id_chart;
     @FXML
     private CategoryAxis id_X;
     @FXML
@@ -150,18 +150,18 @@ public class Controller extends Observable implements Observer {
         task = () ->{
             fffff();
         };
-        series = new XYChart.Series<Integer, Integer>();
+        series = new XYChart.Series();
         Integer [] arr1 = {1,2,3,4,5};
         Integer [] arr2 = {6,7,8,9,10};
         /*series.getData().add(new XYChart.Data(arr1, arr2));
         id_chart.getData().addAll(series);*/
 
         for(Integer i=0; i< 500; i++) {
-            Integer a=0;
+            Integer a=100;
             series.getData().add(new XYChart.Data( i.toString(), a));
             x_val = Double.valueOf(i);
         }
-        id_chart.getData().setAll(series);
+        id_chart.getData().add(series);
         controller_proc = new Controller_Proc(this);
 
     }

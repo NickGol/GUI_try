@@ -7,6 +7,7 @@ import java.util.concurrent.*;
 import de.re.easymodbus.exceptions.ModbusException;
 import de.re.easymodbus.modbusclient.ModbusClient;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.scene.chart.XYChart;
 import jssc.SerialPortException;
 import jssc.SerialPortTimeoutException;
@@ -15,7 +16,7 @@ public class Controller_Proc implements Observer {
     private ModbusClient modbusClient = new ModbusClient();
     LinkedBlockingQueue<String> ui_cmd_queue = new LinkedBlockingQueue<String>(55);
     private Controller controller;
-    XYChart.Series series/* = new XYChart.Series()*/;
+    XYChart.Series series;// = new XYChart.Series();
 
     Runnable task = () ->{
         this.Get_ui_cmd();
@@ -24,6 +25,12 @@ public class Controller_Proc implements Observer {
     public Controller_Proc(Controller controller) {
         this.controller = controller;
         series = new XYChart.Series();
+        for(Integer i=0; i< 4000; i++) {
+            Integer a=100;
+            series.getData().add(new XYChart.Data( i.toString(), a));
+        }
+        Platform.runLater(()-> {controller.id_chart.getData().setAll(series);});
+        //series = new XYChart.Series();
         Thread thread = new Thread(task);
         thread.start();
     }
@@ -84,6 +91,8 @@ public class Controller_Proc implements Observer {
             System.out.println(Thread.currentThread().getName());
             controller.set_id_Input_str(str);
             Send_data_to_gaph(Input_regs);
+
+        System.out.println(Thread.currentThread().getName() + " 12345");
     }
 
     private  void Modbus_Write_Holding_Regs() {
@@ -97,14 +106,27 @@ public class Controller_Proc implements Observer {
     }
 
     private void Send_data_to_gaph(int[] data_arr){
-        series = new XYChart.Series();
+
+/*        ObservableList<XYChart.data<Number, Number="">> data = FXCollections.<XYChart.data<Number, Number="">>ObservableArrayList();
+        for (int i = 0; i < 10000; i++)
+            data.add(new XYChart.Data<>(Math.random(), Math.random()));
+        XYChart.Series series = new XYChart.Series(data);
+        chart.getData().add(series);
+    </xychart.data<number,></xychart.data<number,>*/
+        //series = new XYChart.Series();
         //if(series.getData().size()>0)
           //  series.getData().remove(0, 4000);
-        for(Integer i=0; i<data_arr.length; i++)
+        /*for(Integer i=0; i<data_arr.length; i++)
         {
-            series.getData().add(  new XYChart.Data( i.toString(), data_arr[i] )  );
-        }
-        Platform.runLater(()-> {controller.id_chart.getData().setAll(series);});
+            series.getData().set(  i, new XYChart.Data( i.toString(), data_arr[i] )  );
+        }*/
+        Platform.runLater(()-> {
+            for(Integer i=0; i<data_arr.length; i++)
+            {
+                series.getData().set(  i, new XYChart.Data( i.toString(), data_arr[i] )  );
+            }
+            //controller.id_chart.getData().setAll(series);
+        });
     }
     @Override
     public void update(Observable o, Object arg) {

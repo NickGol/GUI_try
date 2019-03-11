@@ -25,7 +25,7 @@
       <Button fx:id="WriteHold_but_id1" accessibleRole="TOGGLE_BUTTON" layoutX="31.0" layoutY="210.0" mnemonicParsing="false" onMouseClicked="#Draw_chart_12345" prefHeight="25.0" prefWidth="76.0" text="Draw chart" />
       <LineChart fx:id="id_chart" animated="false" cache="true" cacheHint="SPEED" createSymbols="false" layoutX="140.0" layoutY="117.0" prefHeight="277.0" prefWidth="426.0">
         <xAxis>
-          <CategoryAxis fx:id="id_X" animated="false" endMargin="50.0" side="BOTTOM" startMargin="50.0" tickLabelGap="5.0" />
+          <CategoryAxis fx:id="id_X" animated="false" side="BOTTOM" tickLabelGap="5.0" tickLength="5.0" />
         </xAxis>
         <yAxis>
           <NumberAxis fx:id="id_Y" animated="false" autoRanging="false" lowerBound="-1100.0" side="LEFT" tickLabelGap="10.0" tickUnit="50.0" upperBound="1100.0" />
