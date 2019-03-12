@@ -8,7 +8,10 @@ import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
+
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.NumberAxis.DefaultFormatter;
+
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -79,7 +82,7 @@ public class Controller extends Observable implements Observer {
     private TextField id_Input_str;
     public void set_id_Input_str(String id_Input_str) {
         this.id_Input_str.setText(id_Input_str);
-        System.out.println(Thread.currentThread().getName());
+        //System.out.println(Thread.currentThread().getName());
     }
 
     @FXML
@@ -109,7 +112,7 @@ public class Controller extends Observable implements Observer {
     @FXML
     /*private */LineChart<Number, Number> id_chart;
     @FXML
-    private CategoryAxis id_X;
+    private NumberAxis id_X;
     @FXML
     private NumberAxis id_Y;
     @FXML
@@ -140,6 +143,30 @@ public class Controller extends Observable implements Observer {
         id_mb_IP_text.focusedProperty().addListener(Check_if_focused_mb_IP_text);
         id_Holding_str.focusedProperty().addListener(Check_if_focused_mb_Holding_str);
 
+
+        //id_X = new NumberAxis(0, 4000, 1);
+        //id_Y = new NumberAxis(-1100, 1100, 8);
+        //final NumberAxis yAxis = new NumberAxis(0, 50, 10);
+        //id_chart = new LineChart<>(id_X, id_Y);
+        XYChart.Data<Number, Number>[] series1Data;
+        // setup chart
+        id_chart.setTitle("Live Audio Spectrum Data");
+        id_X.setLabel("Frequency Bands");
+        id_Y.setLabel("Magnitudes");
+        id_Y.setTickLabelFormatter(new DefaultFormatter(id_Y, null, "dB"));
+
+        // add starting data
+        XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
+        series.setName("Audio Spectrum");
+
+        // noinspection unchecked
+        /*series1Data = new XYChart.Data[(int)4000];
+        for (int i = 0; i < series1Data.length; i++) {
+            series1Data[i] = new XYChart.Data<Number, Number>(i, 500);
+            series.getData().add(series1Data[i]);
+        }
+        id_chart.getData().add(series);*/
+
         //this.register(controller_proc);
 
         //System.out.println(modbusClient.Available(500));
@@ -150,18 +177,20 @@ public class Controller extends Observable implements Observer {
         task = () ->{
             fffff();
         };
-        series = new XYChart.Series();
-        Integer [] arr1 = {1,2,3,4,5};
+        series = new XYChart.Series<Number, Number>();
+        XYChart.Data<Number, Number> series_data = new XYChart.Data<Number, Number>();
+        /*Integer [] arr1 = {1,2,3,4,5};
         Integer [] arr2 = {6,7,8,9,10};
-        /*series.getData().add(new XYChart.Data(arr1, arr2));
-        id_chart.getData().addAll(series);*/
+        series_data = new XYChart.Data<Number[], Number[]>(arr1, arr2);
+        series.getData().add(series_data);
+        id_chart.getData().add(series);*/
 
-        for(Integer i=0; i< 500; i++) {
+        /*for(Integer i=0; i< 500; i++) {
             Integer a=100;
-            series.getData().add(new XYChart.Data( i.toString(), a));
+            series.getData().add(new XYChart.Data( i, a));
             x_val = Double.valueOf(i);
         }
-        id_chart.getData().add(series);
+        id_chart.getData().add(series);*/
         controller_proc = new Controller_Proc(this);
 
     }
@@ -187,9 +216,29 @@ public class Controller extends Observable implements Observer {
         controller_proc.Set_ui_cmd("Modbus_connect");
         //modbusClient.Connect(id_mb_IP_text.getText(),Integer.parseInt(id_mb_port_text.getText()));
     }
+    private int qqq;
+    private XYChart.Data<Number, Number>[] series5Data;
+    private XYChart.Series<Number, Number> series5;
 
     @FXML
     void Read_Input_but(MouseEvent event) throws IOException, SerialPortTimeoutException, SerialPortException, ModbusException {
+        //XYChart.Data<Number, Number>[] series1Data;
+        // add starting data
+        //XYChart.Series<Number, Number> series = new XYChart.Series<>();
+        //series.setName("Audio Spectrum");
+//if(qqq==0)
+//{
+//    qqq=1;
+//    series5 = new XYChart.Series<>();
+//    series5.setName("Audio Spectrum");
+//    series5Data = new XYChart.Data[(int) 4000];
+//    for (int i = 0; i < series5Data.length; i++) {
+//        series5Data[i] = new XYChart.Data<Number, Number>(i, 1000 * Math.sin(3.14 * i / 400));
+//        series5.getData().add(series5Data[i]);
+//    }
+//}
+//  else    {};  /*id_chart.getData().setAll(series5);*/
+
         controller_proc.Set_ui_cmd("Read_Input_regs");
         /*int[] Input_regs = modbusClient.ReadInputRegisters(0,4);
         String str = Input_regs[0]+" "+Input_regs[1]+" "+Input_regs[2]+" "+Input_regs[3];

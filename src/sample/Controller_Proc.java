@@ -1,6 +1,7 @@
 package sample;
 
 import java.io.IOException;
+import java.sql.Time;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.*;
@@ -16,21 +17,23 @@ public class Controller_Proc implements Observer {
     private ModbusClient modbusClient = new ModbusClient();
     LinkedBlockingQueue<String> ui_cmd_queue = new LinkedBlockingQueue<String>(55);
     private Controller controller;
-    XYChart.Series series;// = new XYChart.Series();
 
-    Runnable task = () ->{
+    private XYChart.Data<Number, Number>[] series1Data;
+    private XYChart.Series<Number, Number> series;
+
+    private Runnable task = () ->{
         this.Get_ui_cmd();
     };
+    private Runnable task_Modbus_Read_Input = () ->{
+        this.Modbus_Read_Input_Regs();
+    };
+    private ScheduledExecutorService execute;
+    private ScheduledFuture<?> modbus_read_input_future;
 
     public Controller_Proc(Controller controller) {
         this.controller = controller;
-        series = new XYChart.Series();
-        for(Integer i=0; i< 4000; i++) {
-            Integer a=100;
-            series.getData().add(new XYChart.Data( i.toString(), a));
-        }
-        Platform.runLater(()-> {controller.id_chart.getData().setAll(series);});
-        //series = new XYChart.Series();
+        Graph_init();
+        execute = Executors.newScheduledThreadPool(1);
         Thread thread = new Thread(task);
         thread.start();
     }
@@ -61,7 +64,7 @@ public class Controller_Proc implements Observer {
         switch (cmd) {
             case "Modbus_connect": Modbus_Client_Connect();
                 break;
-            case "Read_Input_regs": Modbus_Read_Input_Regs();
+            case "Read_Input_regs": modbus_read_input_future = execute.scheduleAtFixedRate(task_Modbus_Read_Input, 0, 100, TimeUnit.MILLISECONDS);
                 break;
             case "Write_Holding_regs": Modbus_Write_Holding_Regs();
                 break;
@@ -88,11 +91,12 @@ public class Controller_Proc implements Observer {
                 e.printStackTrace();
             }
             String str = Input_regs[0]+" "+Input_regs[1]+" "+Input_regs[2]+" "+Input_regs[3];
-            System.out.println(Thread.currentThread().getName());
+            System.out.println(System.currentTimeMillis()/*Thread.currentThread().getName()*/);
+
             controller.set_id_Input_str(str);
             Send_data_to_gaph(Input_regs);
 
-        System.out.println(Thread.currentThread().getName() + " 12345");
+        //System.out.println(Thread.currentThread().getName() + " 12345");
     }
 
     private  void Modbus_Write_Holding_Regs() {
@@ -106,27 +110,34 @@ public class Controller_Proc implements Observer {
     }
 
     private void Send_data_to_gaph(int[] data_arr){
-
-/*        ObservableList<XYChart.data<Number, Number="">> data = FXCollections.<XYChart.data<Number, Number="">>ObservableArrayList();
-        for (int i = 0; i < 10000; i++)
-            data.add(new XYChart.Data<>(Math.random(), Math.random()));
-        XYChart.Series series = new XYChart.Series(data);
-        chart.getData().add(series);
-    </xychart.data<number,></xychart.data<number,>*/
-        //series = new XYChart.Series();
-        //if(series.getData().size()>0)
-          //  series.getData().remove(0, 4000);
-        /*for(Integer i=0; i<data_arr.length; i++)
-        {
-            series.getData().set(  i, new XYChart.Data( i.toString(), data_arr[i] )  );
-        }*/
         Platform.runLater(()-> {
+                    for (Integer i = 0; i < data_arr.length; i++) {
+                        series1Data[i].setYValue(data_arr[i]);
+                        //series.getData().set(  i, new XYChart.Data( i.toString(), data_arr[i] )  );
+                    }
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        });
+        /*Platform.runLater(()-> {
             for(Integer i=0; i<data_arr.length; i++)
             {
                 series.getData().set(  i, new XYChart.Data( i.toString(), data_arr[i] )  );
             }
             //controller.id_chart.getData().setAll(series);
-        });
+        });*/
+    }
+
+    private void Graph_init(){
+        series = new XYChart.Series<Number, Number>();
+        series1Data = new XYChart.Data[(int)4000];
+        for (int i = 0; i < series1Data.length; i++) {
+            series1Data[i] = new XYChart.Data<Number, Number>(i, 0);
+            series.getData().add(series1Data[i]);
+        }
+        controller.id_chart.getData().add(series);
     }
     @Override
     public void update(Observable o, Object arg) {
