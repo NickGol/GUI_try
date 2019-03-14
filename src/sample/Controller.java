@@ -1,6 +1,7 @@
 package sample;
 
 import java.net.URL;
+import java.sql.*;
 import java.util.*;
 
 import javafx.application.Platform;
@@ -138,28 +139,28 @@ public class Controller extends Observable implements Observer {
 
     @FXML
     void initialize() throws InterruptedException {
-        modbusClient = new ModbusClient(id_mb_IP_text.getText(),Integer.parseInt(id_mb_port_text.getText()));
-        id_mb_port_text.focusedProperty().addListener(Check_if_focused_mb_port_text);
-        id_mb_IP_text.focusedProperty().addListener(Check_if_focused_mb_IP_text);
-        id_Holding_str.focusedProperty().addListener(Check_if_focused_mb_Holding_str);
+            modbusClient = new ModbusClient(id_mb_IP_text.getText(), Integer.parseInt(id_mb_port_text.getText()));
+            id_mb_port_text.focusedProperty().addListener(Check_if_focused_mb_port_text);
+            id_mb_IP_text.focusedProperty().addListener(Check_if_focused_mb_IP_text);
+            id_Holding_str.focusedProperty().addListener(Check_if_focused_mb_Holding_str);
 
 
-        //id_X = new NumberAxis(0, 4000, 1);
-        //id_Y = new NumberAxis(-1100, 1100, 8);
-        //final NumberAxis yAxis = new NumberAxis(0, 50, 10);
-        //id_chart = new LineChart<>(id_X, id_Y);
-        XYChart.Data<Number, Number>[] series1Data;
-        // setup chart
-        id_chart.setTitle("Live Audio Spectrum Data");
-        id_X.setLabel("Frequency Bands");
-        id_Y.setLabel("Magnitudes");
-        id_Y.setTickLabelFormatter(new DefaultFormatter(id_Y, null, "dB"));
+            //id_X = new NumberAxis(0, 4000, 1);
+            //id_Y = new NumberAxis(-1100, 1100, 8);
+            //final NumberAxis yAxis = new NumberAxis(0, 50, 10);
+            //id_chart = new LineChart<>(id_X, id_Y);
+            XYChart.Data<Number, Number>[] series1Data;
+            // setup chart
+            id_chart.setTitle("Live Audio Spectrum Data");
+            id_X.setLabel("Frequency Bands");
+            id_Y.setLabel("Magnitudes");
+            id_Y.setTickLabelFormatter(new DefaultFormatter(id_Y, null, "dB"));
 
-        // add starting data
-        XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
-        series.setName("Audio Spectrum");
+            // add starting data
+            XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
+            series.setName("Audio Spectrum");
 
-        // noinspection unchecked
+            // noinspection unchecked
         /*series1Data = new XYChart.Data[(int)4000];
         for (int i = 0; i < series1Data.length; i++) {
             series1Data[i] = new XYChart.Data<Number, Number>(i, 500);
@@ -167,18 +168,18 @@ public class Controller extends Observable implements Observer {
         }
         id_chart.getData().add(series);*/
 
-        //this.register(controller_proc);
+            //this.register(controller_proc);
 
-        //System.out.println(modbusClient.Available(500));
-        //System.out.println("1234567890");
-        Thread t = Thread.currentThread(); // получаем главный поток
-        System.out.println(t.getName()); // main
-        label1_id.setText(t.getName());
-        task = () ->{
-            fffff();
-        };
-        series = new XYChart.Series<Number, Number>();
-        XYChart.Data<Number, Number> series_data = new XYChart.Data<Number, Number>();
+            //System.out.println(modbusClient.Available(500));
+            //System.out.println("1234567890");
+            Thread t = Thread.currentThread(); // получаем главный поток
+            System.out.println(t.getName()); // main
+            label1_id.setText(t.getName());
+            task = () -> {
+                fffff();
+            };
+            series = new XYChart.Series<Number, Number>();
+            XYChart.Data<Number, Number> series_data = new XYChart.Data<Number, Number>();
         /*Integer [] arr1 = {1,2,3,4,5};
         Integer [] arr2 = {6,7,8,9,10};
         series_data = new XYChart.Data<Number[], Number[]>(arr1, arr2);
@@ -191,11 +192,11 @@ public class Controller extends Observable implements Observer {
             x_val = Double.valueOf(i);
         }
         id_chart.getData().add(series);*/
-        controller_proc = new Controller_Proc(this);
+            controller_proc = new Controller_Proc(this);
 
-    }
+        }
 
-    void fffff()
+        void fffff()
     {
         //Platform.runLater(()-> {Controller.this.label1_id.setText(String.valueOf(System.nanoTime()));});
         Platform.runLater(()-> {

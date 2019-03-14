@@ -21,6 +21,8 @@ public class Controller_Proc implements Observer {
     private XYChart.Data<Number, Number>[] series1Data;
     private XYChart.Series<Number, Number> series;
 
+    private Wrire_to_BD Wr_bd;
+
     private Runnable task = () ->{
         this.Get_ui_cmd();
     };
@@ -36,6 +38,7 @@ public class Controller_Proc implements Observer {
         execute = Executors.newScheduledThreadPool(1);
         Thread thread = new Thread(task);
         thread.start();
+        Wr_bd = new Wrire_to_BD(controller);
     }
 
     private void Get_ui_cmd() { // Create independent Thread
@@ -85,6 +88,7 @@ public class Controller_Proc implements Observer {
         int[] Input_regs = new int[0];
             try {
                 Input_regs = modbusClient.ReadInputRegisters(0,4000);
+                Wr_bd.Write_data_to_monitor(Input_regs);
             } catch (ModbusException e) {
                 e.printStackTrace();
             } catch (IOException e) {
