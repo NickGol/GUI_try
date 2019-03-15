@@ -4,14 +4,14 @@
  * and open the template in the editor.
  */
 
-package de.re.easymodbus.exceptions;
+package sample.Modbus.de.re.easymodbus.exceptions;
 
 /**
  *
  * @author Stefan Roßmann
  */
 @SuppressWarnings("serial")
-public class StartingAddressInvalidException extends de.re.easymodbus.exceptions.ModbusException
+public class StartingAddressInvalidException extends ModbusException
 {
   public StartingAddressInvalidException()
   {

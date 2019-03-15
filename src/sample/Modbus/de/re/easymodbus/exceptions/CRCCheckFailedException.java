@@ -4,14 +4,14 @@
  * and open the template in the editor.
  */
 
-package de.re.easymodbus.exceptions;
+package sample.Modbus.de.re.easymodbus.exceptions;
 
 /**
  *
  * @author Stefan Roßmann
  */
 @SuppressWarnings("serial")
-public class CRCCheckFailedException extends de.re.easymodbus.exceptions.ModbusException
+public class CRCCheckFailedException extends ModbusException
 {
   public CRCCheckFailedException()
   {

@@ -1,4 +1,4 @@
-package de.re.easymodbus.modbusclient;
+package sample.Modbus.de.re.easymodbus.modbusclient;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -10,7 +10,7 @@ import java.io.StringWriter;
  * Stores Log Data is a File. The Data will be stored in the File logDataYYYYMMDD.txt
  * Example: logData20170403.txt
  * 
- * @author Stefan Roßmann
+ * @author Stefan Roï¿½mann
  */
 
 public class StoreLogData 

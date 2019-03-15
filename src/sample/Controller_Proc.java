@@ -5,13 +5,15 @@ import java.sql.Time;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.*;
-import de.re.easymodbus.exceptions.ModbusException;
-import de.re.easymodbus.modbusclient.ModbusClient;
+
+import sample.Modbus.de.re.easymodbus.exceptions.ModbusException;
+import sample.Modbus.de.re.easymodbus.modbusclient.ModbusClient;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.scene.chart.XYChart;
-import jssc.SerialPortException;
-import jssc.SerialPortTimeoutException;
+
+
 
 public class Controller_Proc implements Observer {
     private ModbusClient modbusClient = new ModbusClient();
@@ -96,7 +98,6 @@ public class Controller_Proc implements Observer {
             }
             String str = Input_regs[0]+" "+Input_regs[1]+" "+Input_regs[2]+" "+Input_regs[3];
             System.out.println(System.currentTimeMillis()/*Thread.currentThread().getName()*/);
-
             controller.set_id_Input_str(str);
             Send_data_to_gaph(Input_regs);
 

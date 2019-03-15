@@ -1,4 +1,4 @@
-package de.re.easymodbus.datatypes;
+package sample.Modbus.de.re.easymodbus.datatypes;
 
 public enum StopBits 
 {

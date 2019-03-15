@@ -23,8 +23,8 @@ import javafx.scene.input.MouseEvent;
 import java.io.IOException;
 import java.util.concurrent.*;
 
-import de.re.easymodbus.exceptions.ModbusException;
-import de.re.easymodbus.modbusclient.ModbusClient;
+import sample.Modbus.de.re.easymodbus.exceptions.ModbusException;
+import sample.Modbus.de.re.easymodbus.modbusclient.ModbusClient;
 import jssc.SerialPortException;
 import jssc.SerialPortTimeoutException;
 

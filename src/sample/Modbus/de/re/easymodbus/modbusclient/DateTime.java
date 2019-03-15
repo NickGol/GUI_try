@@ -1,4 +1,4 @@
-package de.re.easymodbus.modbusclient;
+package sample.Modbus.de.re.easymodbus.modbusclient;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

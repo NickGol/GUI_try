@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package de.re.easymodbus.exceptions;
+package sample.Modbus.de.re.easymodbus.exceptions;
 
 /**
  *
