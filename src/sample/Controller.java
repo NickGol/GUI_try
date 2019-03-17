@@ -139,6 +139,9 @@ public class Controller extends Observable implements Observer {
 
     @FXML
     void initialize() throws InterruptedException {
+
+        //try_func();
+        //System.out.println(Foo.Fii.index);
             modbusClient = new ModbusClient(id_mb_IP_text.getText(), Integer.parseInt(id_mb_port_text.getText()));
             id_mb_port_text.focusedProperty().addListener(Check_if_focused_mb_port_text);
             id_mb_IP_text.focusedProperty().addListener(Check_if_focused_mb_IP_text);
@@ -320,6 +323,34 @@ public class Controller extends Observable implements Observer {
     public void register(Observer observ)
     {
         channels.add(observ);
+    }
+
+    private Queue<Integer[]> block_queue_bd = new LinkedBlockingQueue<Integer[]>(100);
+    private Queue<Integer> block_queue_bd1 = new LinkedBlockingQueue<Integer>(100);
+    void try_func(){
+        Integer[] qqq = {1,2,3,4,5}, qqq1, qqq5 = {11,21,31,41,51};
+        block_queue_bd.add(qqq);
+        block_queue_bd.add(qqq5);
+        qqq1 = fff_123(qqq);
+        System.out.println(qqq);
+        System.out.println(qqq1);
+        qqq1 = block_queue_bd.poll();
+        System.out.println(qqq1);
+
+        Integer iii = 55;
+        Integer iii1 = iii;
+        block_queue_bd1.add(iii1);
+        iii=57;
+        block_queue_bd1.add(iii1);
+
+
+    }
+
+    Integer[] fff_123(Integer[] asd) {
+        Integer[] zxc = asd;
+        zxc[0] = 55;
+        asd[1] = 56;
+        return zxc;
     }
 }
 

@@ -50,6 +50,23 @@ public class ModbusClient
 	private List<ReceiveDataChangedListener> receiveDataChangedListener = new ArrayList<ReceiveDataChangedListener>();
 	private List<SendDataChangedListener> sendDataChangedListener = new ArrayList<SendDataChangedListener>();
     private boolean debug=false;
+	enum modbusCommands
+	{
+		readCoils(1),
+		readDiscreteInputs(2),
+		readHoldingRegisters(3),
+		readInputRegisters(4),
+		writeSingleCoil(5),
+		writeSingleRegister(6),
+		writeMultipleCoils(15),
+		writeMultipleregisters(16),
+		readWriteMultipleregisters(17);
+		private int index;
+
+		private modbusCommands(int index) {
+			this.index = index;
+		}
+	}
 
 	public ModbusClient(String ipAddress, int port)
 	{
@@ -533,108 +550,23 @@ public class ModbusClient
 	public boolean[] ReadDiscreteInputs(int startingAddress, int quantity) throws ModbusException,
                 UnknownHostException, SocketException, IOException
 	{
-		if (tcpClientSocket == null)
+		if (tcpClientSocket == null) // проверка наличи€ открытого соединени€
 			throw new ConnectionException("connection Error");
-		if (startingAddress > 65535 | quantity > 2000)
+		// проверка корректного задани€ стартового адреса и количества считываемых лементов
+		if ( startingAddress > 65535 | quantity > 2000 | (startingAddress+quantity)>65535 )
 			throw new IllegalArgumentException("Starting adress must be 0 - 65535; quantity must be 0 - 2000");
-		boolean[] response = null;
-		this.transactionIdentifier = toByteArray(0x0001);
-		this.protocolIdentifier = toByteArray(0x0000);
-		this.length = toByteArray(0x0006);
-		this.functionCode = 0x02;
-		this.startingAddress = toByteArray(startingAddress);
-		this.quantity = toByteArray(quantity);
-		byte[] data = new byte[]
-				{
-					this.transactionIdentifier[1],
-					this.transactionIdentifier[0],
-					this.protocolIdentifier[1],
-					this.protocolIdentifier[0],
-					this.length[1],
-					this.length[0],
-					this.unitIdentifier,
-					this.functionCode,
-					this.startingAddress[1],
-					this.startingAddress[0],
-					this.quantity[1],
-					this.quantity[0],
-                    this.crc[0],
-                    this.crc[1]					
-				};
-		
-		if (tcpClientSocket.isConnected() | udpFlag)
-		{
-			if (udpFlag)
-			{
-				InetAddress ipAddress = InetAddress.getByName(this.ipAddress);
-				DatagramPacket sendPacket = new DatagramPacket(data, data.length-2, ipAddress, this.port);
-				DatagramSocket clientSocket = new DatagramSocket();
-				clientSocket.setSoTimeout(500);
-			    clientSocket.send(sendPacket);
-			    data = new byte[2100];
-			    DatagramPacket receivePacket = new DatagramPacket(data, data.length);
-			    clientSocket.receive(receivePacket);
-			    clientSocket.close();
-			    data = receivePacket.getData();
+		// —оздание команды запроса
+		byte[] data = createReadCmd(0, modbusCommands.readDiscreteInputs.index, startingAddress, quantity);
+		// «апуск процесса отправки запроса и получени€ ответа
+		if (tcpClientSocket.isConnected() | udpFlag) {
+			if (udpFlag) {
+				data = makeUdpRequest(data, quantity);
+			} else {
+				data = makeTCPRequest(data);
 			}
-			else
-			{
-				outStream.write(data, 0, data.length-2);
-        		if (debug) StoreLogData.getInstance().Store("Send ModbusTCP-Data: "+Arrays.toString(data));          		
-				if (sendDataChangedListener.size() > 0)
-				{
-					sendData = new byte[data.length-2];
-					System.arraycopy(data, 0, sendData, 0, data.length-2);
-					for (SendDataChangedListener hl : sendDataChangedListener)
-						hl.SendDataChanged();
-				}
-				data = new byte[2100];
-				int numberOfBytes = inStream.read(data, 0, data.length);
-				if (receiveDataChangedListener.size() > 0)
-				{
-					receiveData = new byte[numberOfBytes];
-					System.arraycopy(data, 0, receiveData, 0, numberOfBytes);
-					for (ReceiveDataChangedListener hl : receiveDataChangedListener)
-						hl.ReceiveDataChanged();
-                    if (debug) StoreLogData.getInstance().Store("Receive ModbusTCP-Data: " + Arrays.toString(data));
-
-				}
-			}
-			}
-			if (((int) (data[7] & 0xff)) == 0x82 & ((int) data[8]) == 0x01)
-			{
-				if (debug) StoreLogData.getInstance().Store("FunctionCodeNotSupportedException Throwed");
-				throw new FunctionCodeNotSupportedException("Function code not supported by master");
-			}
-			if (((int) (data[7] & 0xff)) == 0x82 & ((int) data[8]) == 0x02)
-			{
-				if (debug) StoreLogData.getInstance().Store("Starting adress invalid or starting adress + quantity invalid");
-				throw new StartingAddressInvalidException("Starting adress invalid or starting adress + quantity invalid");
-			}
-			if (((int) (data[7] & 0xff)) == 0x82 & ((int) data[8]) == 0x03)
-			{
-				if (debug) StoreLogData.getInstance().Store("Quantity invalid");
-				throw new QuantityInvalidException("Quantity invalid");
-			}
-			if (((int) (data[7] & 0xff)) == 0x82 & ((int) data[8]) == 0x04)
-			{
-				if (debug) StoreLogData.getInstance().Store("Error reading");
-				throw new ModbusException("Error reading");
-			}
-			response = new boolean [quantity];
-			for (int i = 0; i < quantity; i++)
-			{
-				int intData = data[9 + i/8];
-				int mask = (int)Math.pow(2, (i%8));
-				intData = ((intData & mask)/mask);
-				if (intData >0)
-					response[i] = true;
-				else
-					response[i] = false;
-			}
-			
-		
-		return (response);
+		}
+		boolean[] response = convertToResultForCoils(data, quantity);
+		return response;
 	}
 
         /*
@@ -651,107 +583,23 @@ public class ModbusClient
 	public boolean[] ReadCoils(int startingAddress, int quantity) throws ModbusException,
                 UnknownHostException, SocketException, IOException
 	{
-		if (tcpClientSocket == null)
+		if (tcpClientSocket == null) // проверка наличи€ открытого соединени€
 			throw new ConnectionException("connection Error");
-		if (startingAddress > 65535 | quantity > 2000)
+		// проверка корректного задани€ стартового адреса и количества считываемых лементов
+		if ( startingAddress > 65535 | quantity > 2000 | (startingAddress+quantity)>65535 )
 			throw new IllegalArgumentException("Starting adress must be 0 - 65535; quantity must be 0 - 2000");
-		boolean[] response = new boolean[quantity];
-		this.transactionIdentifier = toByteArray(0x0001);
-		this.protocolIdentifier = toByteArray(0x0000);
-		this.length = toByteArray(0x0006);
-		//this.unitIdentifier = 0x00;
-		this.functionCode = 0x01;
-		this.startingAddress = toByteArray(startingAddress);
-		this.quantity = toByteArray(quantity);
-		byte[] data = new byte[]
-				{
-					this.transactionIdentifier[1],
-					this.transactionIdentifier[0],
-					this.protocolIdentifier[1],
-					this.protocolIdentifier[0],
-					this.length[1],
-					this.length[0],
-					this.unitIdentifier,
-					this.functionCode,
-					this.startingAddress[1],
-					this.startingAddress[0],
-					this.quantity[1],
-					this.quantity[0],
-                    this.crc[0],
-                    this.crc[1]		
-				};
-
-		if (tcpClientSocket.isConnected() | udpFlag)
-		{
-			if (udpFlag)
-			{
-                            InetAddress ipAddress = InetAddress.getByName(this.ipAddress);
-                            DatagramPacket sendPacket = new DatagramPacket(data, data.length, ipAddress, this.port);
-                            DatagramSocket clientSocket = new DatagramSocket();
-                            clientSocket.setSoTimeout(500);
-			    clientSocket.send(sendPacket);
-			    data = new byte[2100];
-			    DatagramPacket receivePacket = new DatagramPacket(data, data.length);
-			    clientSocket.receive(receivePacket);
-			    clientSocket.close();
-			    data = receivePacket.getData();
+		// —оздание команды запроса
+		byte[] data = createReadCmd(0, modbusCommands.readCoils.index, startingAddress, quantity);
+		// «апуск процесса отправки запроса и получени€ ответа
+		if (tcpClientSocket.isConnected() | udpFlag) {
+			if (udpFlag) {
+				data = makeUdpRequest(data, quantity);
+			} else {
+				data = makeTCPRequest(data);
 			}
-			else
-			{
-				outStream.write(data, 0, data.length-2);
-        		if (debug) StoreLogData.getInstance().Store("Send ModbusTCP-Data: "+Arrays.toString(data));   
-				if (sendDataChangedListener.size() > 0)
-				{
-					sendData = new byte[data.length-2];
-					System.arraycopy(data, 0, sendData, 0, data.length-2);
-					for (SendDataChangedListener hl : sendDataChangedListener)
-						hl.SendDataChanged();
-				}
-				data = new byte[2100];
-				int numberOfBytes = inStream.read(data, 0, data.length);
-				if (receiveDataChangedListener.size() > 0)
-				{
-					receiveData = new byte[numberOfBytes];
-					System.arraycopy(data, 0, receiveData, 0, numberOfBytes);
-					for (ReceiveDataChangedListener hl : receiveDataChangedListener)
-						hl.ReceiveDataChanged();
-					if (debug) StoreLogData.getInstance().Store("Receive ModbusTCP-Data: " + Arrays.toString(data));
-				}
-			}
-                }
-			if (((int) (data[7] & 0xff)) == 0x81 & ((int) data[8]) == 0x01)
-			{
-				if (debug) StoreLogData.getInstance().Store("FunctionCodeNotSupportedException Throwed");
-				throw new FunctionCodeNotSupportedException("Function code not supported by master");
-			}
-			if (((int) (data[7] & 0xff)) == 0x81 & ((int) data[8]) == 0x02)
-			{
-				if (debug) StoreLogData.getInstance().Store("Starting adress invalid or starting adress + quantity invalid");
-				throw new StartingAddressInvalidException("Starting adress invalid or starting adress + quantity invalid");
-			}			
-			if (((int) (data[7] & 0xff)) == 0x81 & ((int) data[8]) == 0x03)
-			{
-				if (debug) StoreLogData.getInstance().Store("Quantity invalid");
-				throw new QuantityInvalidException("Quantity invalid");
-			}
-			if (((int) (data[7] & 0xff)) == 0x81 & ((int) data[8]) == 0x04)
-			{
-				if (debug) StoreLogData.getInstance().Store("Error reading");
-				throw new ModbusException("Error reading");
-			}
-			for (int i = 0; i < quantity; i++)
-			{
-				int intData = (int) data[9 + i/8];
-				int mask = (int)Math.pow(2, (i%8));
-				intData = ((intData & mask)/mask);
-				if (intData >0)
-					response[i] = true;
-				else
-					response[i] = false;
-			}
-			
-		
-		return (response);
+		}
+		boolean[] response = convertToResultForCoils(data, quantity);
+		return response;
 	}
 
         /*
@@ -768,106 +616,23 @@ public class ModbusClient
 	public int[] ReadHoldingRegisters(int startingAddress, int quantity) throws ModbusException,
                 UnknownHostException, SocketException, IOException
 	{
-		if (tcpClientSocket == null)
+		if (tcpClientSocket == null) // проверка наличи€ открытого соединени€
 			throw new ConnectionException("connection Error");
-		if (startingAddress > 65535 | quantity > 125)
-			throw new IllegalArgumentException("Starting adress must be 0 - 65535; quantity must be 0 - 125");
-		int[] response = new int[quantity];
-		this.transactionIdentifier = toByteArray(0x0001);
-		this.protocolIdentifier = toByteArray(0x0000);
-		this.length = toByteArray(0x0006);
-		//serialdata = this.unitIdentifier;
-		this.functionCode = 0x03;
-		this.startingAddress = toByteArray(startingAddress);
-		this.quantity = toByteArray(quantity);
-
-		byte[] data = new byte[]
-				{
-					this.transactionIdentifier[1],
-					this.transactionIdentifier[0],
-					this.protocolIdentifier[1],
-					this.protocolIdentifier[0],
-					this.length[1],
-					this.length[0],
-					this.unitIdentifier,
-					this.functionCode,
-					this.startingAddress[1],
-					this.startingAddress[0],
-					this.quantity[1],
-					this.quantity[0],
-                    this.crc[0],
-                    this.crc[1]		
-				};
-
-		if (tcpClientSocket.isConnected() | udpFlag)
-		{
-			if (udpFlag)
-			{
-				InetAddress ipAddress = InetAddress.getByName(this.ipAddress);
-				DatagramPacket sendPacket = new DatagramPacket(data, data.length, ipAddress, this.port);
-				DatagramSocket clientSocket = new DatagramSocket();
-				clientSocket.setSoTimeout(500);
-			    clientSocket.send(sendPacket);
-			    data = new byte[2100];
-			    DatagramPacket receivePacket = new DatagramPacket(data, data.length);
-			    clientSocket.receive(receivePacket);
-			    clientSocket.close();
-			    data = receivePacket.getData();
+		// проверка корректного задани€ стартового адреса и количества считываемых лементов
+		if ( startingAddress > 65535 | quantity > 5125 | (startingAddress+quantity)>65535 )
+			throw new IllegalArgumentException("Starting adress must be 0 - 65535; quantity must be 0 - 5125");
+		// —оздание команды запроса
+		byte[] data = createReadCmd(0, modbusCommands.readHoldingRegisters.index, startingAddress, quantity);
+		// «апуск процесса отправки запроса и получени€ ответа
+		if (tcpClientSocket.isConnected() | udpFlag) {
+			if (udpFlag) {
+				data = makeUdpRequest(data, quantity);
+			} else {
+				data = makeTCPRequest(data);
 			}
-			else
-			{
-				outStream.write(data, 0, data.length-2);
-        		if (debug) StoreLogData.getInstance().Store("Send ModbusTCP-Data: "+Arrays.toString(data));   
-				if (sendDataChangedListener.size() > 0)
-				{
-					sendData = new byte[data.length-2];
-					System.arraycopy(data, 0, sendData, 0, data.length-2);
-					for (SendDataChangedListener hl : sendDataChangedListener)
-						hl.SendDataChanged();
-				}
-				data = new byte[2100];
-				int numberOfBytes = inStream.read(data, 0, data.length);
-				if (receiveDataChangedListener.size() > 0)
-				{
-					receiveData = new byte[numberOfBytes];
-					System.arraycopy(data, 0, receiveData, 0, numberOfBytes);
-					for (ReceiveDataChangedListener hl : receiveDataChangedListener)
-						hl.ReceiveDataChanged();
-					if (debug) StoreLogData.getInstance().Store("Receive ModbusTCP-Data: " + Arrays.toString(data));
-				}
-                        }
-			}
-			if (((int) data[7]) == 0x83 & ((int) data[8]) == 0x01)
-			{
-				if (debug) StoreLogData.getInstance().Store("FunctionCodeNotSupportedException Throwed");
-				throw new FunctionCodeNotSupportedException("Function code not supported by master");
-			}
-			if (((int) data[7]) == 0x83 & ((int) data[8]) == 0x02)
-			{
-				if (debug) StoreLogData.getInstance().Store("Starting adress invalid or starting adress + quantity invalid");
-				throw new StartingAddressInvalidException("Starting adress invalid or starting adress + quantity invalid");
-			}			
-			if (((int) data[7]) == 0x83 & ((int) data[8]) == 0x03)
-			{
-				if (debug) StoreLogData.getInstance().Store("Quantity invalid");
-				throw new QuantityInvalidException("Quantity invalid");
-			}
-			if (((int) data[7]) == 0x83 & ((int) data[8]) == 0x04)
-			{
-				if (debug) StoreLogData.getInstance().Store("Error reading");
-				throw new ModbusException("Error reading");
-			}
-			for (int i = 0; i < quantity; i++)
-			{
-				byte[] bytes = new byte[2];
-				bytes[0] = data[9+i*2];
-				bytes[1] = data[9+i*2+1];
-				ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-						
-				response[i] = byteBuffer.getShort();
-			}
-
-		return (response);
+		}
+		int[] result = convertToResultForRegs(data);
+		return result;
 	}
 
 	/*
@@ -884,109 +649,23 @@ public class ModbusClient
 	public int[] ReadInputRegisters(int startingAddress, int quantity) throws ModbusException,
                 UnknownHostException, SocketException, IOException
 	{
-		if (tcpClientSocket == null)
+		if (tcpClientSocket == null) // проверка наличи€ открытого соединени€
 			throw new ConnectionException("connection Error");
-		if (startingAddress > 65535 | quantity > 5125)
-			throw new IllegalArgumentException("Starting adress must be 0 - 65535; quantity must be 0 - 125");
-		int[] response = new int[quantity];
-		this.transactionIdentifier = toByteArray(0x0001);
-		this.protocolIdentifier = toByteArray(0x0000);
-		this.length = toByteArray(0x0006);
-		//this.unitIdentifier = 0x00;
-		this.functionCode = 0x04;
-		this.startingAddress = toByteArray(startingAddress);
-		this.quantity = toByteArray(quantity);
-        //this.quantity[0] = 15;
-        //this.quantity[1] = 15;
-		byte[] data = new byte[]
-				{
-					this.transactionIdentifier[1],
-					this.transactionIdentifier[0],
-					this.protocolIdentifier[1],
-					this.protocolIdentifier[0],
-					this.length[1],
-					this.length[0],
-					this.unitIdentifier,
-					this.functionCode,
-					this.startingAddress[1],
-					this.startingAddress[0],
-					this.quantity[1],
-					this.quantity[0],
-                    this.crc[0],
-                    this.crc[1]		
-				};
-
-		if (tcpClientSocket.isConnected() | udpFlag)
-		{
-			if (udpFlag)
-			{
-				InetAddress ipAddress = InetAddress.getByName(this.ipAddress);
-				DatagramPacket sendPacket = new DatagramPacket(data, data.length, ipAddress, this.port);
-				DatagramSocket clientSocket = new DatagramSocket();
-				clientSocket.setSoTimeout(500);
-			    clientSocket.send(sendPacket);
-			    data = new byte[2100];
-			    DatagramPacket receivePacket = new DatagramPacket(data, data.length);
-			    clientSocket.receive(receivePacket);
-			    clientSocket.close();
-			    data = receivePacket.getData();
+		// проверка корректного задани€ стартового адреса и количества считываемых лементов
+		if ( startingAddress > 65535 | quantity > 5125 | (startingAddress+quantity)>65535 )
+			throw new IllegalArgumentException("Starting adress must be 0 - 65535; quantity must be 0 - 5125");
+		// —оздание команды запроса
+		byte[] data = createReadCmd(0, modbusCommands.readInputRegisters.index, startingAddress, quantity);
+		// «апуск процесса отправки запроса и получени€ ответа
+		if (tcpClientSocket.isConnected() | udpFlag) {
+			if (udpFlag) {
+				data = makeUdpRequest(data, quantity);
+			} else {
+				data = makeTCPRequest(data);
 			}
-			else
-			{
-				outStream.write(data, 0, data.length-2);
-        		if (debug) StoreLogData.getInstance().Store("Send ModbusTCP-Data: "+Arrays.toString(data));   
-				if (sendDataChangedListener.size() > 0)
-				{
-					sendData = new byte[data.length-2];
-					System.arraycopy(data, 0, sendData, 0, data.length-2);
-					for (SendDataChangedListener hl : sendDataChangedListener)
-						hl.SendDataChanged();
-				}
-				data = new byte[8009];
-				DataInputStream in = new DataInputStream(inStream);
-				in.readFully(data, 0, 9);
-				int numberOfBytes = data.length;
-				//int numberOfBytes = inStream.read(data, 0, data.length);
-				if (receiveDataChangedListener.size() > 0)
-				{
-					receiveData = new byte[numberOfBytes];
-					System.arraycopy(data, 0, receiveData, 0, numberOfBytes);
-					for (ReceiveDataChangedListener hl : receiveDataChangedListener)
-						hl.ReceiveDataChanged();
-					if (debug) StoreLogData.getInstance().Store("Receive ModbusTCP-Data: " + Arrays.toString(data));
-				}
-			}
-			if (((int) (data[7] & 0xff)) == 0x84 & ((int) data[8]) == 0x01)
-			{
-				if (debug) StoreLogData.getInstance().Store("FunctionCodeNotSupportedException Throwed");
-				throw new FunctionCodeNotSupportedException("Function code not supported by master");
-			}			
-			if (((int) (data[7] & 0xff)) == 0x84 & ((int) data[8]) == 0x02)
-			{
-				if (debug) StoreLogData.getInstance().Store("Starting adress invalid or starting adress + quantity invalid");
-				throw new StartingAddressInvalidException("Starting adress invalid or starting adress + quantity invalid");
-			}			
-			if (((int) (data[7] & 0xff)) == 0x84 & ((int) data[8]) == 0x03)
-			{
-				if (debug) StoreLogData.getInstance().Store("Quantity invalid");
-				throw new QuantityInvalidException("Quantity invalid");
-			}
-			if (((int) (data[7] & 0xff)) == 0x84 & ((int) data[8]) == 0x04)
-			{
-				if (debug) StoreLogData.getInstance().Store("Error reading");
-				throw new ModbusException("Error reading");
-			}
-			}
-			for (int i = 0; i < quantity; i++)
-			{
-				byte[] bytes = new byte[2];
-				bytes[0] = (byte) data[9+i*2];
-				bytes[1] = (byte) data[9+i*2+1];
-				ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-				response[i] = byteBuffer.getShort();
-			}
-
-		return (response);
+		}
+		int[] result = convertToResultForRegs(data);
+		return result;
 	}
 	
         /*
@@ -1732,5 +1411,129 @@ public class ModbusClient
     {
         sendDataChangedListener.add(toAdd);
     }	
-	
-}                                                                                                
+
+    private byte[] createReadCmd(int unitIdentifier, int functionCode, int startingAddress, int quantity){
+		this.transactionIdentifier = 	toByteArray(0x0001);
+		this.protocolIdentifier = 		toByteArray(0x0000);
+		this.length = 					toByteArray(0x0006);
+		this.unitIdentifier = 			(byte)unitIdentifier;
+		this.functionCode = 			(byte)functionCode;
+		this.startingAddress = 			toByteArray(startingAddress);
+		this.quantity = 				toByteArray(quantity);
+		byte[] readCMD = new byte[]
+		{
+			this.transactionIdentifier[1],
+			this.transactionIdentifier[0],
+			this.protocolIdentifier[1],
+			this.protocolIdentifier[0],
+			this.length[1],
+			this.length[0],
+			this.unitIdentifier,
+			this.functionCode,
+			this.startingAddress[1],
+			this.startingAddress[0],
+			this.quantity[1],
+			this.quantity[0],
+			this.crc[0],
+			this.crc[1]
+		};
+		return readCMD;
+	}
+
+	private byte[] makeUdpRequest(byte[] data, int quantity) throws IOException {
+		InetAddress ipAddress = InetAddress.getByName(this.ipAddress);
+		DatagramPacket sendPacket = new DatagramPacket(data, data.length, ipAddress, this.port);
+		DatagramSocket clientSocket = new DatagramSocket();
+		clientSocket.setSoTimeout(500);
+		clientSocket.send(sendPacket);
+		data = new byte[2100];
+		DatagramPacket receivePacket = new DatagramPacket(data, data.length);
+		clientSocket.receive(receivePacket);
+		clientSocket.close();
+		data = receivePacket.getData();
+		return data;
+	}
+
+	private byte[] makeTCPRequest(byte[] data) throws IOException, ModbusException {
+		outStream.write(data, 0, data.length-2); // Send request command
+		if (debug) StoreLogData.getInstance().Store("Send ModbusTCP-Data: "+Arrays.toString(data));
+		//data = new byte[7];
+		DataInputStream in = new DataInputStream(inStream);
+		in.readFully(data, 0, 7); // „тение первых семи регистров
+		int needToReadBytes = ByteBuffer.wrap(data,4,2).getShort()-1; // »з 4 и 6 регистров получаем оставшуюс€ длину сообщени€
+		data = new byte[needToReadBytes]; // ¬ыделение пам€ти, достаточной дл€ приЄма оставшейс€ части сообщени€
+		in.readFully(data, 0, needToReadBytes); // „тение оставшейс€ части сообщени€
+		checkForModbusErrors(data); // ѕроверка на ошибки, которые может вернуть сервер
+		return data;
+	}
+
+	private int[] convertToResultForRegs(byte[] data){
+		int numberOfRegs = (data.length-2)/2;
+		int[] response = new int[numberOfRegs];
+		for (int i = 0; i < response.length; i++)
+		{
+			//response[i] = ((int)data[2+2*i]<<8)+(int)data[2+2*i+1];
+			byte[] bytes = new byte[2];
+			bytes[0] = data[2+i*2];
+			bytes[1] = data[2+i*2+1];
+			ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+			response[i] = byteBuffer.getShort();
+		}
+		return response;
+	}
+
+	private boolean[] convertToResultForCoils(byte[] data, int numberOfCoils) {
+    	boolean[] response = new boolean[numberOfCoils];
+		for (int i = 0; i < numberOfCoils; i++) {
+			int intData = data[2+i/8];
+			int mask = (int) Math.pow( 2,(i%8) );
+			intData = ( (intData & mask) / mask );
+			if (intData > 0)
+				response[i] = true;
+			else
+				response[i] = false;
+		}
+		return response;
+	}
+	private void checkForModbusErrors(byte[] data) throws ModbusException {
+		if ( ((int)(data[0] & 0xff))>127 & ((int) data[1]) == 0x01 )
+		{
+			if (debug) StoreLogData.getInstance().Store("FunctionCodeNotSupportedException Throwed");
+			throw new FunctionCodeNotSupportedException("Function code not supported by master");
+		}
+		if (((int)(data[0] & 0xff))>127 & ((int) data[1]) == 0x02 )
+		{
+			if (debug) StoreLogData.getInstance().Store("Starting adress invalid or starting adress + quantity invalid");
+			throw new StartingAddressInvalidException("Starting adress invalid or starting adress + quantity invalid");
+		}
+		if ( ((int)(data[0] & 0xff))>127 & ((int) data[1]) == 0x03 )
+		{
+			if (debug) StoreLogData.getInstance().Store("Quantity invalid");
+			throw new QuantityInvalidException("Quantity invalid");
+		}
+		if ( ((int)(data[0] & 0xff))>127 & ((int) data[1]) == 0x04 )
+		{
+			if (debug) StoreLogData.getInstance().Store("Error reading");
+			throw new ModbusException("Error reading");
+		}
+	}
+}
+
+
+		/*if (sendDataChangedListener.size() > 0)
+		{
+			sendData = new byte[data.length-2];
+			System.arraycopy(data, 0, sendData, 0, data.length-2);
+			for (SendDataChangedListener hl : sendDataChangedListener)
+				hl.SendDataChanged();
+		}*/
+
+
+				/*if (receiveDataChangedListener.size() > 0)
+		{
+			receiveData = new byte[numberOfBytes];
+			System.arraycopy(data, 0, receiveData, 0, numberOfBytes);
+			for (ReceiveDataChangedListener hl : receiveDataChangedListener)
+				hl.ReceiveDataChanged();
+			if (debug) StoreLogData.getInstance().Store("Receive ModbusTCP-Data: " + Arrays.toString(data));
+		}*/

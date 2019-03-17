@@ -40,7 +40,7 @@ public class Controller_Proc implements Observer {
         execute = Executors.newScheduledThreadPool(1);
         Thread thread = new Thread(task);
         thread.start();
-        Wr_bd = new Wrire_to_BD(controller);
+        //Wr_bd = new Wrire_to_BD(controller);
     }
 
     private void Get_ui_cmd() { // Create independent Thread
