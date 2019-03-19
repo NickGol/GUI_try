@@ -88,9 +88,12 @@ public class Controller_Proc implements Observer {
 
     private  void Modbus_Read_Input_Regs() {
         int[] Input_regs = new int[0];
+        boolean[] Input_coils = new boolean[0];
             try {
-                Input_regs = modbusClient.ReadInputRegisters(0,4000);
-                Wr_bd.Write_data_to_monitor(Input_regs);
+                //Input_regs = modbusClient.ReadInputRegisters(0,0);
+                Input_coils = modbusClient.ReadCoils(0,2000);
+                Input_coils = modbusClient.ReadDiscreteInputs(0,2000);
+                //Wr_bd.Write_data_to_monitor(Input_regs);
             } catch (ModbusException e) {
                 e.printStackTrace();
             } catch (IOException e) {

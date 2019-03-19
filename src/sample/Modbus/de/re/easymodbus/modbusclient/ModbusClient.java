@@ -58,9 +58,9 @@ public class ModbusClient
 		readInputRegisters(4),
 		writeSingleCoil(5),
 		writeSingleRegister(6),
-		writeMultipleCoils(15),
-		writeMultipleregisters(16),
-		readWriteMultipleregisters(17);
+		writeMultipleCoils(0x15),
+		writeMultipleregisters(0x16),
+		readWriteMultipleregisters(0x17);
 		private int index;
 
 		private modbusCommands(int index) {
@@ -554,7 +554,10 @@ public class ModbusClient
 			throw new ConnectionException("connection Error");
 		// проверка корректного задани€ стартового адреса и количества считываемых лементов
 		if ( startingAddress > 65535 | quantity > 2000 | (startingAddress+quantity)>65535 )
-			throw new IllegalArgumentException("Starting adress must be 0 - 65535; quantity must be 0 - 2000");
+			throw new QuantityInvalidException("Starting adress must be 0 - 65535; quantity must be 0 - 2000");
+		if ( (startingAddress+(quantity-1)/8+1) > 65535 )
+			throw new QuantityInvalidException("Starting ( adress + (quantity-1)/8+1 ) must be 0 - 65535;");
+
 		// —оздание команды запроса
 		byte[] data = createReadCmd(0, modbusCommands.readDiscreteInputs.index, startingAddress, quantity);
 		// «апуск процесса отправки запроса и получени€ ответа
@@ -587,7 +590,10 @@ public class ModbusClient
 			throw new ConnectionException("connection Error");
 		// проверка корректного задани€ стартового адреса и количества считываемых лементов
 		if ( startingAddress > 65535 | quantity > 2000 | (startingAddress+quantity)>65535 )
-			throw new IllegalArgumentException("Starting adress must be 0 - 65535; quantity must be 0 - 2000");
+			throw new QuantityInvalidException("Starting address must be 0 - 65535; quantity must be 0 - 2000");
+		if ( (startingAddress+(quantity-1)/8+1) > 65535 )
+			throw new QuantityInvalidException("Starting ( address + (quantity-1)/8+1 ) must be 0 - 65535;");
+
 		// —оздание команды запроса
 		byte[] data = createReadCmd(0, modbusCommands.readCoils.index, startingAddress, quantity);
 		// «апуск процесса отправки запроса и получени€ ответа
@@ -619,8 +625,11 @@ public class ModbusClient
 		if (tcpClientSocket == null) // проверка наличи€ открытого соединени€
 			throw new ConnectionException("connection Error");
 		// проверка корректного задани€ стартового адреса и количества считываемых лементов
-		if ( startingAddress > 65535 | quantity > 5125 | (startingAddress+quantity)>65535 )
-			throw new IllegalArgumentException("Starting adress must be 0 - 65535; quantity must be 0 - 5125");
+		if ( startingAddress > 65535 | quantity > 5000 | startingAddress < 0 | quantity < 0 )
+			throw new QuantityInvalidException("Starting address must be 0 - 65535; quantity must be 0 - 5000");
+		if ( (startingAddress+quantity) > 65535 )
+			throw new QuantityInvalidException("Starting (address + quantity) must be 0 - 65535;");
+
 		// —оздание команды запроса
 		byte[] data = createReadCmd(0, modbusCommands.readHoldingRegisters.index, startingAddress, quantity);
 		// «апуск процесса отправки запроса и получени€ ответа
@@ -652,8 +661,10 @@ public class ModbusClient
 		if (tcpClientSocket == null) // проверка наличи€ открытого соединени€
 			throw new ConnectionException("connection Error");
 		// проверка корректного задани€ стартового адреса и количества считываемых лементов
-		if ( startingAddress > 65535 | quantity > 5125 | (startingAddress+quantity)>65535 )
-			throw new IllegalArgumentException("Starting adress must be 0 - 65535; quantity must be 0 - 5125");
+		if ( startingAddress > 65535 | quantity > 5000 | startingAddress < 0 | quantity < 0 )
+			throw new QuantityInvalidException("Starting address must be 0 - 65535; quantity must be 0 - 5000");
+		if ( (startingAddress+quantity) > 65535 )
+			throw new QuantityInvalidException("Starting (address + quantity) must be 0 - 65535;");
 		// —оздание команды запроса
 		byte[] data = createReadCmd(0, modbusCommands.readInputRegisters.index, startingAddress, quantity);
 		// «апуск процесса отправки запроса и получени€ ответа
@@ -759,8 +770,8 @@ public class ModbusClient
 		}        
         if (((int)(data[7] & 0xff)) == 0x85 & data[8] == 0x02)
 		{
-			if (debug) StoreLogData.getInstance().Store("Starting adress invalid or starting adress + quantity invalid");
-			throw new StartingAddressInvalidException("Starting adress invalid or starting adress + quantity invalid");
+			if (debug) StoreLogData.getInstance().Store("Starting address invalid or starting address + quantity invalid");
+			throw new StartingAddressInvalidException("Starting address invalid or starting address + quantity invalid");
 		}        
         if (((int)(data[7] & 0xff)) == 0x85 & data[8] == 0x03)
 		{
@@ -858,8 +869,8 @@ public class ModbusClient
 		}        
         if (((int)(data[7] & 0xff)) == 0x86 & data[8] == 0x02)
 		{
-			if (debug) StoreLogData.getInstance().Store("Starting adress invalid or starting adress + quantity invalid");
-			throw new StartingAddressInvalidException("Starting adress invalid or starting adress + quantity invalid");
+			if (debug) StoreLogData.getInstance().Store("Starting address invalid or starting address + quantity invalid");
+			throw new StartingAddressInvalidException("Starting address invalid or starting address + quantity invalid");
 		}        
         if (((int)(data[7] & 0xff)) == 0x86 & data[8] == 0x03)
 		{
@@ -974,8 +985,8 @@ public class ModbusClient
 		}       
         if (((int)(data[7] & 0xff)) == 0x8F & data[8] == 0x02)
 		{
-			if (debug) StoreLogData.getInstance().Store("Starting adress invalid or starting adress + quantity invalid");
-			throw new StartingAddressInvalidException("Starting adress invalid or starting adress + quantity invalid");
+			if (debug) StoreLogData.getInstance().Store("Starting address invalid or starting address + quantity invalid");
+			throw new StartingAddressInvalidException("Starting address invalid or starting address + quantity invalid");
 		}
         if (((int)(data[7] & 0xff)) == 0x8F & data[8] == 0x03)
 		{
@@ -1078,8 +1089,8 @@ public class ModbusClient
 		}        
         if (((int)(data[7] & 0xff)) == 0x90 & data[8] == 0x02)
 		{
-			if (debug) StoreLogData.getInstance().Store("Starting adress invalid or starting adress + quantity invalid");
-			throw new StartingAddressInvalidException("Starting adress invalid or starting adress + quantity invalid");
+			if (debug) StoreLogData.getInstance().Store("Starting address invalid or starting address + quantity invalid");
+			throw new StartingAddressInvalidException("Starting address invalid or starting address + quantity invalid");
 		}
         if (((int)(data[7] & 0xff)) == 0x90 & data[8] == 0x03)
 		{
@@ -1199,8 +1210,8 @@ public class ModbusClient
 		}        
         if (((int)(data[7] & 0xff)) == 0x97 & data[8] == 0x02)
 		{
-			if (debug) StoreLogData.getInstance().Store("Starting adress invalid or starting adress + quantity invalid");
-			throw new StartingAddressInvalidException("Starting adress invalid or starting adress + quantity invalid");
+			if (debug) StoreLogData.getInstance().Store("Starting address invalid or starting address + quantity invalid");
+			throw new StartingAddressInvalidException("Starting address invalid or starting address + quantity invalid");
 		}
         if (((int)(data[7] & 0xff)) == 0x97 & data[8] == 0x03)
 		{
@@ -1503,8 +1514,8 @@ public class ModbusClient
 		}
 		if (((int)(data[0] & 0xff))>127 & ((int) data[1]) == 0x02 )
 		{
-			if (debug) StoreLogData.getInstance().Store("Starting adress invalid or starting adress + quantity invalid");
-			throw new StartingAddressInvalidException("Starting adress invalid or starting adress + quantity invalid");
+			if (debug) StoreLogData.getInstance().Store("Starting address invalid or starting address + quantity invalid");
+			throw new StartingAddressInvalidException("Starting address invalid or starting address + quantity invalid");
 		}
 		if ( ((int)(data[0] & 0xff))>127 & ((int) data[1]) == 0x03 )
 		{
